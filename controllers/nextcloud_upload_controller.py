@@ -88,9 +88,9 @@ class BinaryNextCloud(http.Controller):
         files = request.httprequest.files.getlist('ufile')
         Model = request.env['ir.attachment']
 
-        url = request.env['ir.config_parameter'].sudo().get_param('bf_nextcloud.nextcloud_url')
-        username = request.env['ir.config_parameter'].sudo().get_param('bf_nextcloud.nextcloud_username')
-        password = request.env['ir.config_parameter'].sudo().get_param('bf_nextcloud.nextcloud_password')
+        url = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_url')
+        username = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_username')
+        password = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_password')
         head = {'OCS-APIRequest': 'true'}
 
         for ufile in files:

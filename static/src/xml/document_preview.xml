@@ -8,7 +8,7 @@
                 <div name="document_preview">
                     <t t-set="mimetype" t-value="record.data.mimetype"/>
                     <a t-attf-href="#{record.data.nextcloud_share_link}" target="_blank">
-                        <img src="/bf_nextcloud/static/description/nextcloud.png"
+                        <img src="/nextcloud/static/description/nextcloud.png"
                              alt="Nextcloud Share Link" class="w-100"
                         style="height: 150px;"/>
                     </a>

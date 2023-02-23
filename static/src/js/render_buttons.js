@@ -1,4 +1,4 @@
-odoo.define('bf_nextcloud.NextcloudUpload', function (require) {
+odoo.define('nextcloud.NextcloudUpload', function (require) {
     'use strict';
 
     const DocumentsKanbanControllerMixin = require('documents.controllerMixin');

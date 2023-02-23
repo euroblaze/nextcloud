@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "BF NextCloud Integration",
-    'summary': """BF NextCloud Integration Module""",
-    'description': """BF NextCloud Integration add the buttons to upload and link Nextcloud files""",
+    'name': "NextCloud Integration",
+    'summary': """NextCloud Integration Module""",
+    'description': """NextCloud Integration add the buttons to upload and link Nextcloud files""",
     'author': "Simplify-ERP®",
     'website': "https://simplify-erp.com/",
     'category': 'Extra Tools',
@@ -16,15 +16,15 @@
     ],
     'assets': {
         'web.assets_qweb': [
-            'bf_nextcloud/static/src/**/*.xml',
+            'nextcloud/static/src/**/*.xml',
         ],
         'mail.assets_discuss_public': [
-            'bf_nextcloud/static/src/models/*/*.js',
+            'nextcloud/static/src/models/*/*.js',
             ('include', 'web._assets_helpers'),
             'mail/static/src/components/*/*',
         ],
         'web.assets_backend': [
-            'bf_nextcloud/static/src/**/*.js'
+            'nextcloud/static/src/**/*.js'
         ],
     }
 }

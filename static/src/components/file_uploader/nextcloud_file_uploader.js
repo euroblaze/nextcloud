@@ -249,7 +249,7 @@ Object.assign(FileUploaderNextcloud, {
             optional: true,
         },
     },
-    template: 'bf_nextcloud.FileUploaderNextcloud',
+    template: 'nextcloud.FileUploaderNextcloud',
 });
 
 registerMessagingComponent(FileUploaderNextcloud);

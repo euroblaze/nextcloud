@@ -9,7 +9,7 @@ import { AttachmentImage } from '@mail/components/attachment_image/attachment_im
 import { patch } from "@web/core/utils/patch";
 import { factory } from '@mail/models/attachment/attachment'
 
-patch(AttachmentBox.prototype, "bf_nextcloud.upload_patch", {
+patch(AttachmentBox.prototype, "nextcloud.upload_patch", {
     _onClickAddNextcloud(ev) {
         ev.preventDefault();
         ev.stopPropagation();
