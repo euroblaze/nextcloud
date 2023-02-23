@@ -1,0 +1,31 @@
+<odoo>
+
+    <record id="document_view_kanban" model="ir.ui.view">
+        <field name="model">documents.document</field>
+        <field name="inherit_id" ref="documents.document_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[last()]" position="after">
+                <field name="nextcloud_attachment"/>
+                <field name="nextcloud_view_link"/>
+                <field name="nextcloud_share_link"/>
+            </xpath>
+            <xpath expr="//t[@t-elif='webimage']" position="after">
+                <t t-if="record.nextcloud_attachment.raw_value == true">
+                    <img t-attf-src="/bf_nextcloud/static/description/nextcloud.png" alt="Nextcloud Thumbnail"/>
+                </t>
+            </xpath>
+            <xpath expr='//t[@t-elif="webimage"]//img' position="attributes">
+                <attribute name="t-if">
+                    record.nextcloud_attachment.raw_value != true
+                </attribute>
+            </xpath>
+            <xpath expr="//div[hasclass('o_kanban_record_body')]" position="inside">
+                <div t-if="record.nextcloud_attachment.raw_value == true">
+                    <strong>Nextcloud Share Link</strong>
+                    <field name="nextcloud_share_link" widget="url"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

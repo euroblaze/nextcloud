@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template t-name="nextcloud.DocumentsInspector.previews" t-inherit="documents.DocumentsInspector.previews"
+              t-inherit-mode="extension">
+        <xpath expr="(//div[@name='document_preview'])" position="replace">
+            <t t-if="record.data.nextcloud_attachment">
+                <div name="document_preview">
+                    <t t-set="mimetype" t-value="record.data.mimetype"/>
+                    <a t-attf-href="#{record.data.nextcloud_share_link}" target="_blank">
+                        <img src="/bf_nextcloud/static/description/nextcloud.png"
+                             alt="Nextcloud Share Link" class="w-100"
+                        style="height: 150px;"/>
+                    </a>
+                    <t t-if="recordData.isImage or recordData.isGif or recordData.isYouTubeVideo">
+                        <t t-set="size"
+                           t-value="nbPreviews === 1 ? '268x130' : nbPreviews === 2 ? '120x130' : '120x75'"/>
+                    </t>
+                    <div t-elif="record.data.url"
+                         class="o_image o_mimetype_icon"
+                         t-attf-data-mimetype="{{mimetype}}"
+                         t-att-title="record.data.name"
+                         t-att-data-id="record.res_id"/>
+                    <div t-elif="record.data.type === 'empty'"
+                         class="o_inspector_request_icon fa fa-upload fa-5x"
+                         t-att-title="record.data.name"
+                         t-att-data-id="record.res_id"/>
+                    <div t-else=""
+                         t-attf-class="o_image o_mimetype_icon {{
+                    (mimetype and (mimetype.indexOf('pdf') !== -1 or
+                    mimetype.indexOf('video') !== -1 or
+                    mimetype.indexOf('text') !== -1)) and 'o_preview_available' or ''}}"
+                         t-att-data-mimetype="mimetype"
+                         t-att-data-id="record.res_id"
+                         t-att-title="record.data.name"/>
+                    <span t-if="record.data.type === 'empty'">
+                        Upload Document
+                    </span>
+                </div>
+            </t>
+            <t t-else="">
+                <div name="document_preview" t-attf-class="{{widget._computeClasses(record)}}">
+                    <t t-set="mimetype" t-value="record.data.mimetype"/>
+                    <t t-if="recordData.isImage or recordData.isGif or recordData.isYouTubeVideo">
+                        <t t-set="size"
+                           t-value="nbPreviews === 1 ? '268x130' : nbPreviews === 2 ? '120x130' : '120x75'"/>
+                        <img t-if="recordData.isYouTubeVideo"
+                             t-att-data-id="record.res_id"
+                             class="o_preview_available"
+                             t-attf-src="https://img.youtube.com/vi/#{recordData.youtubeToken}/0.jpg"
+                             alt="Youtube Video"/>
+                        <t t-else="">
+                            <t t-set="unique" t-value="record.data.checksum ? record.data.checksum.slice(-8) : ''"/>
+                            <img class="o_preview_available o_documents_image_background"
+                                 t-attf-src="/documents/image/#{record.res_id}/#{size}?unique=#{unique}"
+                                 t-att-data-id="record.res_id"
+                                 t-att-title="record.data.name"/>
+                        </t>
+
+                    </t>
+                    <div t-elif="record.data.url"
+                         class="o_image o_mimetype_icon"
+                         t-attf-data-mimetype="{{mimetype}}"
+                         t-att-title="record.data.name"
+                         t-att-data-id="record.res_id"/>
+                    <div t-elif="record.data.type === 'empty'"
+                         class="o_inspector_request_icon fa fa-upload fa-5x"
+                         t-att-title="record.data.name"
+                         t-att-data-id="record.res_id"/>
+                    <div t-else=""
+                         t-attf-class="o_image o_mimetype_icon {{
+                    (mimetype and (mimetype.indexOf('pdf') !== -1 or
+                    mimetype.indexOf('video') !== -1 or
+                    mimetype.indexOf('text') !== -1)) and 'o_preview_available' or ''}}"
+                         t-att-data-mimetype="mimetype"
+                         t-att-data-id="record.res_id"
+                         t-att-title="record.data.name"/>
+                    <span t-if="record.data.type === 'empty'">
+                        Upload Document
+                    </span>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
