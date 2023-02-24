@@ -9,18 +9,12 @@ import { AttachmentImage } from '@mail/components/attachment_image/attachment_im
 import { patch } from "@web/core/utils/patch";
 import { factory } from '@mail/models/attachment/attachment'
 
+const NextcloudUpload = require('bf_nextcloud.NextcloudUpload');
+
 patch(AttachmentBox.prototype, "nextcloud.upload_patch", {
     _onClickAddNextcloud(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         $('input.o_FileUploaderNextcloud').click();
     }
-});
-
-Object.assign(AttachmentCard, {
-    template: 'mail.AttachmentCard.NextCloud',
-});
-
-Object.assign(AttachmentImage, {
-    template: 'mail.AttachmentImage.NextCloud',
 });

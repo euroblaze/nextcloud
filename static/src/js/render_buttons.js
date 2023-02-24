@@ -1,13 +1,28 @@
-odoo.define('nextcloud.NextcloudUpload', function (require) {
+odoo.define('bf_nextcloud.NextcloudUpload', function(require) {
     'use strict';
+
+    const DocumentsInspector = require('documents.DocumentsInspector');
+    const DocumentViewer = require('documents.DocumentViewer');
+    const { computeMultiSelection } = require('documents.utils');
+
+    const { getMessagingComponent } = require('@mail/utils/messaging_component');
+
+    const { _t, qweb } = require('web.core');
+    const config = require('web.config');
+    const { Markup } = require('web.utils');
+    const fileUploadMixin = require('web.fileUploadMixin');
+    const session = require('web.session');
+    const { ComponentWrapper } = require('web.OwlCompatibility');
+    const Dialog = require('web.Dialog');
 
     const DocumentsKanbanControllerMixin = require('documents.controllerMixin');
     const DocumentsKanbanController = require("documents.DocumentsKanbanController");
+
     const uploadFucn = require('web.fileUploadMixin');
 
     DocumentsKanbanControllerMixin._uploadFilesNextcloud = uploadFucn._uploadFilesNextcloud
 
-    DocumentsKanbanController.include({
+    var nextCloud = DocumentsKanbanController.include({
 
         events: {
             'click .o_documents_kanban_nextcloud': '_onClickNextcloudDocumentsUpload',
@@ -16,11 +31,11 @@ odoo.define('nextcloud.NextcloudUpload', function (require) {
 
         _uploadFilesNextcloud: uploadFucn._uploadFilesNextcloud,
 
-        _onClickNextcloudDocumentsUpload: function (ev) {
+        _onClickNextcloudDocumentsUpload: function(ev) {
             this._uploadFilesHandlerNextCloud(true)(ev);
         },
 
-        _uploadFilesHandlerNextCloud: function (ev) {
+        _uploadFilesHandlerNextCloud: function(ev) {
             return (ev) => {
                 var self = this;
                 const recordId = ev.data ? ev.data.id : undefined;
@@ -37,8 +52,6 @@ odoo.define('nextcloud.NextcloudUpload', function (require) {
         },
     });
 
-    var documentMixin = require('documents.viewMixin');
-    documentMixin.inspectorFields.push('nextcloud_attachment');
-    documentMixin.inspectorFields.push('nextcloud_share_link');
+    return nextCloud;
 
 });

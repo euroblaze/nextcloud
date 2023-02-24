@@ -11,7 +11,7 @@
             </xpath>
             <xpath expr="//t[@t-elif='webimage']" position="after">
                 <t t-if="record.nextcloud_attachment.raw_value == true">
-                    <img t-attf-src="/nextcloud/static/description/nextcloud.png" alt="Nextcloud Thumbnail"/>
+                    <img t-attf-src="/bf_nextcloud/static/description/nextcloud.png" alt="Nextcloud Thumbnail"/>
                 </t>
             </xpath>
             <xpath expr='//t[@t-elif="webimage"]//img' position="attributes">

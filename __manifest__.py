@@ -8,7 +8,7 @@
     'category': 'Extra Tools',
     'version': '1.0',
     'license': 'LGPL-3',
-    'depends': ['account', 'documents', 'mail'],
+    'depends': ['base', 'account', 'documents', 'mail'],
     'data': [
         'views/settings_view.xml',
         'views/ir_attachments.xml',
@@ -16,15 +16,15 @@
     ],
     'assets': {
         'web.assets_qweb': [
-            'nextcloud/static/src/**/*.xml',
+            'bf_nextcloud/static/src/**/*.xml',
         ],
         'mail.assets_discuss_public': [
-            'nextcloud/static/src/models/*/*.js',
+            'bf_nextcloud/static/src/models/*/*.js',
             ('include', 'web._assets_helpers'),
             'mail/static/src/components/*/*',
         ],
         'web.assets_backend': [
-            'nextcloud/static/src/**/*.js'
+            'bf_nextcloud/static/src/**/*.js'
         ],
     }
 }
