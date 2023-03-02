@@ -92,16 +92,23 @@ class BinaryNextCloud(http.Controller):
         username = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_username')
         password = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_password')
         head = {'OCS-APIRequest': 'true'}
-
         for ufile in files:
             filename = ufile.filename
             mydata = ufile.read()
+            exist, index = False, 1
+            while not exist:
+                get_url = url + '/remote.php/dav/files/%s/%s' % (username, filename)
+                get_call = requests.get(get_url, headers=head, auth=(username, password))
+                if get_call.status_code == 200:
+                    filename = '(%s).'.join(filename.rsplit('.', 1)) % str(index)
+                    index += 1
+                else:
+                    exist = True
             put_url = url + '/remote.php/dav/files/' + username + '/' + filename
             put_request = requests.put(put_url,
                                        headers=head,
                                        auth=(username, password),
                                        data=mydata)
-            logging.info(put_request)
             params = {'shareType': 3, 'publicUpload': True, 'path': filename}
             post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
             post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
