@@ -8,20 +8,13 @@
     'category': 'Extra Tools',
     'version': '1.0',
     'license': 'LGPL-3',
-    'depends': ['base', 'account', 'documents', 'mail'],
+    'depends': ['nextcloud', 'documents'],
     'data': [
-        'views/settings_view.xml',
-        'views/ir_attachments.xml',
         'views/documents_document.xml'
     ],
     'assets': {
         'web.assets_qweb': [
             'bf_nextcloud/static/src/**/*.xml',
-        ],
-        'mail.assets_discuss_public': [
-            'bf_nextcloud/static/src/models/*/*.js',
-            ('include', 'web._assets_helpers'),
-            'mail/static/src/components/*/*',
         ],
         'web.assets_backend': [
             'bf_nextcloud/static/src/**/*.js'
