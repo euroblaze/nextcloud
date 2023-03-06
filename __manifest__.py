@@ -8,9 +8,11 @@
     'category': 'Extra Tools',
     'version': '1.0',
     'license': 'LGPL-3',
-    'depends': ['nextcloud', 'documents'],
+    'depends': ['base', 'account', 'mail', 'documents'],
     'data': [
-        'views/documents_document.xml'
+        'views/documents_document.xml',
+        'views/settings_view.xml',
+        'views/ir_attachments.xml'
     ],
     'assets': {
         'web.assets_qweb': [
