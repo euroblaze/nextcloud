@@ -48,15 +48,13 @@ def serialize_exception(f):
 
 class BinaryNextCloud(http.Controller):
     @http.route([
-        '/web/binary/upload_attachment_nextcloud',
         '/web/binary/upload_attachment_nextcloud/<string:res_model>/<string:res_id>'
     ],
         type='http', auth="user")
     @serialize_exception
-    def upload_attachment_nextcloud(self, ufile, callback=None, res_id=None, res_model=None, **kw):
+    def upload_attachment_nextcloud(self, res_id=None, res_model=None):
         files = request.httprequest.files.getlist('ufile')
         Model = request.env['ir.attachment']
-
         url = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_url')
         username = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_username')
         password = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_password')
@@ -74,10 +72,7 @@ class BinaryNextCloud(http.Controller):
                 else:
                     exist = True
             put_url = url + '/remote.php/dav/files/' + username + '/' + filename
-            put_request = requests.put(put_url,
-                                       headers=head,
-                                       auth=(username, password),
-                                       data=mydata)
+            put_request = requests.put(put_url, headers=head, auth=(username, password), data=mydata)
             params = {'shareType': 3, 'publicUpload': True, 'path': filename}
             post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
             post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
@@ -93,19 +88,9 @@ class BinaryNextCloud(http.Controller):
                 'name': filename,
                 'nextcloud_attachment': True,
                 'nextcloud_share_link': share_url,
-                'nextcloud_view_link': 'test',
-                'res_model': 'documents.document',
+                'nextcloud_view_link': share_url,
+                'res_id': res_id,
+                'res_model': res_model
             }
-            if res_id:
-                values.update({'res_id': res_id})
-            if res_model:
-                values.update({'res_model': res_model})
             attachment = Model.create(values)
             attachment._post_add_create()
-            folder_id = kw.get('folder_id', 1)
-            if folder_id == 'false' or not isinstance(folder_id, int):
-                folder_id = 1
-            request.env['documents.document'].sudo().create({
-                'attachment_id': attachment.id,
-                'folder_id': folder_id,
-            })
