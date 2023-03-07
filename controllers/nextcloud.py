@@ -53,6 +53,9 @@ class BinaryNextCloud(http.Controller):
         type='http', auth="user")
     @serialize_exception
     def upload_attachment_nextcloud(self, res_id=None, res_model=None):
+        logging.info('TEST')
+        logging.info(res_id)
+        logging.info(res_model)
         files = request.httprequest.files.getlist('ufile')
         Model = request.env['ir.attachment']
         url = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_url')
@@ -89,7 +92,7 @@ class BinaryNextCloud(http.Controller):
                 'nextcloud_attachment': True,
                 'nextcloud_share_link': share_url,
                 'nextcloud_view_link': share_url,
-                'res_id': res_id,
+                'res_id': int(res_id),
                 'res_model': res_model
             }
             attachment = Model.create(values)
