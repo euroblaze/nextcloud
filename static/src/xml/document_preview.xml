@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <t t-name="documents.DocumentsInspector.buttons" t-inherit="documents.DocumentsInspector.buttons">
+        <xpath expr="//button[contains(@class, 'o_inspector_download')]" position="replace">
+            <t t-if="widget.records[0].data.nextcloud_attachment">
+                <a t-attf-href="#{widget.records[0].data.nextcloud_share_link}/download" class="btn fa fa-download o_inspector_button" title="Download"/>
+            </t>
+            <t t-else="">
+                <button class="btn fa fa-download o_inspector_button o_inspector_download" title="Download"/>
+            </t>
+        </xpath>
+    </t>
+
     <template t-name="nextcloud.DocumentsInspector.previews" t-inherit="documents.DocumentsInspector.previews"
               t-inherit-mode="extension">
         <xpath expr="(//div[@name='document_preview'])" position="replace">
@@ -10,7 +21,7 @@
                     <a t-attf-href="#{record.data.nextcloud_share_link}" target="_blank">
                         <img src="/bf_nextcloud/static/description/nextcloud.png"
                              alt="Nextcloud Share Link" class="w-100"
-                        style="height: 150px;"/>
+                             style="height: 150px;"/>
                     </a>
                     <t t-if="recordData.isImage or recordData.isGif or recordData.isYouTubeVideo">
                         <t t-set="size"
