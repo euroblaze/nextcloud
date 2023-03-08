@@ -11,7 +11,7 @@ class DocumentShare(models.Model):
         for record in self:
             nextcloud_attachment = False
             if record.document_ids:
-                if record.document_ids[0].nextcloud_attachment:
+                if record.document_ids[0].nextcloud_attachment and len(record.document_ids) == 1:
                     nextcloud_attachment = True
             if not nextcloud_attachment:
                 record.full_url = "%s/document/share/%s/%s" % (record.get_base_url(), record.id, record.access_token)

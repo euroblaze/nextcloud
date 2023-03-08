@@ -28,4 +28,29 @@
         </field>
     </record>
 
+    <template id="share_page" inherit_id="documents.share_page">
+        <xpath expr="//a[@t-else='']" position="replace">
+            <a t-elif="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download" target="new"
+               t-att-title="'Download ' + document.name"
+               t-esc="document.name"/>
+            <a t-else="" t-att-href="download_URL" target="new" t-att-title="'Download ' + document.name"
+               t-esc="document.name"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_card_right')]" position="replace">
+            <div class="o_card_right d-flex flex-column flex-nowrap justify-content-between text-right">
+                <img t-attf-title="Owner: #{document.create_uid.name}" t-att-alt="document.create_uid.name"
+                     class="o_object_fit_cover rounded-circle" width="15" height="15"
+                     t-attf-src="/document/avatar/#{share_id}/#{token}"/>
+                <a t-if="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download" target="new"
+                   t-att-title="'Download ' + document.name">
+                    <i t-attf-class="fa #{'url' not in document.type and 'fa-download' or 'fa-link'}"/>
+                </a>
+                <a t-elif="not document_request" t-att-href="download_URL" target="new"
+                   t-att-title="'Download ' + document.name">
+                    <i t-attf-class="fa #{'url' not in document.type and 'fa-download' or 'fa-link'}"/>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
 </odoo>
