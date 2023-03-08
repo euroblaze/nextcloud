@@ -48,11 +48,12 @@ def serialize_exception(f):
 
 class BinaryNextCloud(http.Controller):
     @http.route([
-        '/web/binary/upload_attachment_nextcloud'
+        '/web/binary/upload_attachment_nextcloud',
+        '/web/binary/upload_attachment_nextcloud/<int:folder_id>'
     ],
         type='http', auth="user")
     @serialize_exception
-    def upload_attachment_nextcloud_documents(self, **kw):
+    def upload_attachment_nextcloud_documents(self, folder_id=False):
         files = request.httprequest.files.getlist('ufile')
         Model = request.env['ir.attachment']
 
@@ -97,9 +98,6 @@ class BinaryNextCloud(http.Controller):
             }
             attachment = Model.create(values)
             attachment._post_add_create()
-            folder_id = kw.get('folder_id', 1)
-            if folder_id == 'false' or not isinstance(folder_id, int):
-                folder_id = 1
             request.env['documents.document'].sudo().create({
                 'attachment_id': attachment.id,
                 'folder_id': folder_id,

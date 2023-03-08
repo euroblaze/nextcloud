@@ -16,8 +16,13 @@ ProgressBarMixin._uploadFilesNextcloud = async function _uploadFilesNextcloud(fi
     if (!files || !files.length) { return; }
 
     await new Promise(resolve => {
+        var folderId = this.searchModel.get('selectedFolderId');
         const xhr = this._createXhr();
-        xhr.open('POST', '/web/binary/upload_attachment_nextcloud');
+        if (folderId) {
+            xhr.open('POST', '/web/binary/upload_attachment_nextcloud/' + String(folderId));
+        } else {
+            xhr.open('POST', '/web/binary/upload_attachment_nextcloud');
+        }
         const fileUploadData = this._makeFileUpload(Object.assign({ files, xhr }, params));
         const { fileUploadId, formData } = fileUploadData;
         this._fileUploads[fileUploadId] = fileUploadData;
