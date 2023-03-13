@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import io
+import zipfile
 import functools
 import logging
 import json
+import base64
 import xml.etree.ElementTree as ET
-
+import requests
 import werkzeug
 import werkzeug.exceptions
 import werkzeug.utils
@@ -14,7 +17,7 @@ import werkzeug.wsgi
 
 from odoo import http
 from odoo.http import content_disposition, dispatch_rpc, request, serialize_exception as _serialize_exception
-import requests
+from odoo.addons.documents.controllers.main import ShareRoute
 
 _logger = logging.getLogger(__name__)
 
@@ -44,6 +47,47 @@ def serialize_exception(f):
             return werkzeug.exceptions.InternalServerError(json.dumps(error))
 
     return wrap
+
+
+class ShareRouteNextCloud(ShareRoute):
+
+    def _make_zip(self, name, documents):
+        """returns zip files for the Document Inspector and the portal.
+
+        :param name: the name to give to the zip file.
+        :param documents: files (documents.document) to be zipped.
+        :return: a http response to download a zip file.
+        """
+        stream = io.BytesIO()
+        try:
+            with zipfile.ZipFile(stream, 'w') as doc_zip:
+                for document in self._get_downloadable_documents(documents):
+                    if document.type != 'binary':
+                        continue
+                    if document.nextcloud_attachment:
+                        status, content, filename, mimetype, filehash = request.env['ir.http']._binary_record_content(
+                            document, field='nextcloud_share_link', filename=None, filename_field='name',
+                            default_mimetype='application/octet-stream')
+                        content = requests.get("%s/download" % document.nextcloud_share_link).content
+                        doc_zip.writestr(filename, content,
+                                         compress_type=zipfile.ZIP_DEFLATED)
+                    else:
+                        status, content, filename, mimetype, filehash = request.env['ir.http']._binary_record_content(
+                            document, field='datas', filename=None, filename_field='name',
+                            default_mimetype='application/octet-stream')
+                        doc_zip.writestr(filename, base64.b64decode(content),
+                                         compress_type=zipfile.ZIP_DEFLATED)
+        except zipfile.BadZipfile:
+            _logger.exception("BadZipfile exception")
+
+        content = stream.getvalue()
+        headers = [
+            ('Content-Type', 'zip'),
+            ('X-Content-Type-Options', 'nosniff'),
+            ('Content-Length', len(content)),
+            ('Content-Disposition', content_disposition(name))
+        ]
+        return request.make_response(content, headers)
 
 
 class BinaryNextCloud(http.Controller):
