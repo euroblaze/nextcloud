@@ -26,9 +26,9 @@
                                     <field name="nextcloud_password" password="True"/>
                                 </div>
                                 <div class="row mt16">
-                                    <label class="o_form_label col-lg-3" for="nextcloud_token"
-                                           string="Nextcloud Token"/>
-                                    <field name="nextcloud_token"/>
+                                    <button name="nextcloud_test_connection" type="object"
+                                            string="NextCloud Test Connection"
+                                            class="btn-primary"/>
                                 </div>
                             </div>
                         </div>
