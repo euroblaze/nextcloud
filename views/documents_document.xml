@@ -56,7 +56,7 @@
         <xpath expr="//div[hasclass('o_image_preview')]" position="replace">
             <div t-if="document.nextcloud_attachment" class="o_image_preview">
                 <img src="/bf_nextcloud/static/description/nextcloud.png"
-                     alt="Nextcloud Share Link" class="w-100 h-100"/>
+                     alt="Nextcloud Share Link" class="w-100 h-100" style="object-fit: scale-down;"/>
             </div>
             <div t-elif="document.mimetype and'image/' in document.mimetype" class="o_image_preview"
                  t-attf-style="background-image:url(/document/thumbnail/#{share_id}/#{token}/#{document.id})"/>
