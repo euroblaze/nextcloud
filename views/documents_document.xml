@@ -30,7 +30,8 @@
 
     <template id="share_page" inherit_id="documents.share_page">
         <xpath expr="//a[@t-else='']" position="replace">
-            <a t-elif="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download" target="new"
+            <a t-elif="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download"
+               target="new"
                t-att-title="'Download ' + document.name"
                t-esc="document.name"/>
             <a t-else="" t-att-href="download_URL" target="new" t-att-title="'Download ' + document.name"
@@ -41,7 +42,8 @@
                 <img t-attf-title="Owner: #{document.create_uid.name}" t-att-alt="document.create_uid.name"
                      class="o_object_fit_cover rounded-circle" width="15" height="15"
                      t-attf-src="/document/avatar/#{share_id}/#{token}"/>
-                <a t-if="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download" target="new"
+                <a t-if="document.nextcloud_attachment" t-attf-href="#{document.nextcloud_share_link}/download"
+                   target="new"
                    t-att-title="'Download ' + document.name">
                     <i t-attf-class="fa #{'url' not in document.type and 'fa-download' or 'fa-link'}"/>
                 </a>
@@ -50,6 +52,14 @@
                     <i t-attf-class="fa #{'url' not in document.type and 'fa-download' or 'fa-link'}"/>
                 </a>
             </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_image_preview')]" position="replace">
+            <div t-if="document.nextcloud_attachment" class="o_image_preview">
+                <img src="/bf_nextcloud/static/description/nextcloud.png"
+                     alt="Nextcloud Share Link" class="w-100 h-100"/>
+            </div>
+            <div t-elif="document.mimetype and'image/' in document.mimetype" class="o_image_preview"
+                 t-attf-style="background-image:url(/document/thumbnail/#{share_id}/#{token}/#{document.id})"/>
         </xpath>
     </template>
 
