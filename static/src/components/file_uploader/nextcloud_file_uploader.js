@@ -220,7 +220,7 @@ export class FileUploaderNextcloud extends Component {
         var self = this;
         if (!files || !files.length) { return; }
         this._fileUploads = {};
-
+        $.blockUI();
         await new Promise(resolve => {
             var res_id = this.thread.id;
             var res_model = this.thread.model;
@@ -232,6 +232,11 @@ export class FileUploaderNextcloud extends Component {
             xhr.upload.addEventListener("progress", ev => {
                 this._updateFileUploadProgress(fileUploadId, ev);
             });
+            xhr.onload = async () => {
+                resolve();
+                $.unblockUI();
+                setTimeout("location.reload(true);", 1000);
+            };
             xhr.send(formData);
         });
     }
