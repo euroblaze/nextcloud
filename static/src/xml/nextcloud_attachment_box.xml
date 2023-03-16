@@ -1,61 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="nextcloud.AttachmentBox" owl="1">
-        <div class="o_AttachmentBox">
-            <t t-if="chatter">
-                <div class="o_AttachmentBox_title">
-                    <hr class="o_AttachmentBox_dashedLine"/>
-                    <span class="o_AttachmentBox_titleText">
-                        Nextcloud Attachments
-                    </span>
-                    <hr class="o_AttachmentBox_dashedLine"/>
-                </div>
-                <div class="o_AttachmentBox_content">
-                    <t t-if="isDropZoneVisible.value">
-                        <DropZone
-                                class="o_AttachmentBox_dropZone"
-                                t-on-o-dropzone-files-dropped="_onDropZoneFilesDropped"
-                                t-ref="dropzone"
-                        />
+    <t t-name="bf_nextcloud.NextCloudAttachmentList" owl="1">
+        <div class="o_AttachmentList">
+            <t t-if="attachmentList">
+                <div class="row o_AttachmentList_partialList o_AttachmentList_partialListImages" style="padding: 1rem 1rem 3rem;">
+                    <t t-foreach="attachmentList.attachmentImages" t-as="attachmentImage"
+                       t-key="attachmentImage.localId">
+                        <div class="col-lg-2 col-6" t-if="attachmentImage.attachment.nextcloud_attachment">
+                            <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
+                            <div>
+                                <a t-att-href="attachmentImage.attachment.nextcloud_share_link" t-esc="attachmentImage.attachment.displayName"/>
+                            </div>
+                        </div>
                     </t>
-                    <t t-if="chatter.attachmentListNextcloud">
-                        <AttachmentListNextcloud
-                                class="o_attachmentBox_attachmentList"
-                                attachmentListLocalId="chatter.attachmentList.localId"
-                                t-on-o-attachment-removed="_onAttachmentRemoved"
-                        />
-                    </t>
-                    <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload" t-on-click="_onClickAdd">
-                        <i class="fa fa-plus-square"/>
-                        Nextcloud Upload
-                    </button>
                 </div>
-                <FileUploaderNextcloud
-                        threadLocalId="chatter.thread.localId"
-                        t-on-o-attachment-created="_onAttachmentCreated"
-                        t-ref="fileUploaderNextcloud"
-                />
+                <div class="row o_AttachmentList_partialList o_AttachmentList_partialListNonImages">
+                    <t t-foreach="attachmentList.attachmentCards" t-as="attachmentCard" t-key="attachmentCard.localId">
+                        <div class="col-lg-2 col-6" t-if="attachmentCard.attachment.nextcloud_attachment">
+                            <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
+                            <div>
+                                <a t-attf-href="attachmentCard.attachment.nextcloud_share_link" t-esc="attachmentCard.attachment.displayName"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
             </t>
         </div>
     </t>
 
     <t t-inherit="mail.AttachmentBox" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('o_AttachmentBox_content')]" position="inside">
-            <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload" t-on-click="_onClickAddNextcloud">
+            <div class="o_AttachmentBox_title">
+                <hr class="o_AttachmentBox_dashedLine"/>
+                <span class="o_AttachmentBox_titleText">
+                    Nextcloud Attachments
+                </span>
+                <hr class="o_AttachmentBox_dashedLine"/>
+            </div>
+            <t t-if="chatter.attachmentList">
+                <NextCloudAttachmentList
+                    class="o_attachmentBox_attachmentList"
+                    attachmentListLocalId="chatter.attachmentList.localId"
+                    t-on-o-attachment-removed="_onAttachmentRemoved"
+                />
+            </t>
+            <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload"
+                    t-on-click="_onClickAddNextcloud">
                         <i class="fa fa-cloud-upload"/>
                 Nextcloud Upload
             </button>
-        </xpath>
-
-        <xpath expr="//t[@t-if='chatter']" position="inside">
             <FileUploaderNextcloud
                     threadLocalId="chatter.thread.localId"
                     t-on-o-attachment-created="_onAttachmentCreated"
                     t-ref="fileUploaderNextcloud"
             />
         </xpath>
+    </t>
 
+    <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[1]" position="attributes">
+            <attribute name="t-att-class">{'d-none': attachmentImage.attachment.nextcloud_attachment}</attribute>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.AttachmentCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[1]" position="attributes">
+            <attribute name="t-att-class">{'d-none': AttachmentCard.attachment.nextcloud_attachment}</attribute>
+        </xpath>
     </t>
 
 </templates>

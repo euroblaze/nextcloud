@@ -7,6 +7,7 @@ import { csrf_token, _t } from 'web.core';
 
 const { Component } = owl;
 const { useRef } = owl.hooks;
+import framework from 'web.framework';
 
 const geAttachmentNextTemporaryId = (function () {
     let tmpId = 0;
@@ -220,7 +221,7 @@ export class FileUploaderNextcloud extends Component {
         var self = this;
         if (!files || !files.length) { return; }
         this._fileUploads = {};
-        $.blockUI();
+        framework.blockUI();
         await new Promise(resolve => {
             var res_id = this.thread.id;
             var res_model = this.thread.model;
@@ -234,7 +235,7 @@ export class FileUploaderNextcloud extends Component {
             });
             xhr.onload = async () => {
                 resolve();
-                $.unblockUI();
+                framework.unblockUI();
                 setTimeout("location.reload(true);", 1000);
             };
             xhr.send(formData);
