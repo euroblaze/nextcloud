@@ -4,13 +4,15 @@
     <t t-name="bf_nextcloud.NextCloudAttachmentList" owl="1">
         <div class="o_AttachmentList">
             <t t-if="attachmentList">
-                <div class="row o_AttachmentList_partialList o_AttachmentList_partialListImages" style="padding: 1rem 1rem 3rem;">
+                <div class="row o_AttachmentList_partialList o_AttachmentList_partialListImages"
+                     style="padding: 1rem 1rem 3rem;">
                     <t t-foreach="attachmentList.attachmentImages" t-as="attachmentImage"
                        t-key="attachmentImage.localId">
                         <div class="col-lg-2 col-6" t-if="attachmentImage.attachment.nextcloud_attachment">
                             <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
-                                <a t-att-href="attachmentImage.attachment.nextcloud_share_link" t-esc="attachmentImage.attachment.displayName"/>
+                                <a t-att-href="attachmentImage.attachment.nextcloud_share_link"
+                                   t-esc="attachmentImage.attachment.displayName"/>
                             </div>
                         </div>
                     </t>
@@ -20,7 +22,8 @@
                         <div class="col-lg-2 col-6" t-if="attachmentCard.attachment.nextcloud_attachment">
                             <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
-                                <a t-attf-href="attachmentCard.attachment.nextcloud_share_link" t-esc="attachmentCard.attachment.displayName"/>
+                                <a t-attf-href="attachmentCard.attachment.nextcloud_share_link"
+                                   t-esc="attachmentCard.attachment.displayName"/>
                             </div>
                         </div>
                     </t>
@@ -40,9 +43,9 @@
             </div>
             <t t-if="chatter.attachmentList">
                 <NextCloudAttachmentList
-                    class="o_attachmentBox_attachmentList"
-                    attachmentListLocalId="chatter.attachmentList.localId"
-                    t-on-o-attachment-removed="_onAttachmentRemoved"
+                        class="o_attachmentBox_attachmentList"
+                        attachmentListLocalId="chatter.attachmentList.localId"
+                        t-on-o-attachment-removed="_onAttachmentRemoved"
                 />
             </t>
             <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload"
@@ -59,14 +62,22 @@
     </t>
 
     <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[1]" position="attributes">
-            <attribute name="t-att-class">{'d-none': attachmentImage.attachment.nextcloud_attachment}</attribute>
+        <xpath expr="//div[hasclass('o_AttachmentImage')]" position="attributes">
+            <attribute name="t-att-class">{
+                'hide-not-nextcloud': attachmentImage.attachment.nextcloud_attachment,
+                'o-isUploading': attachmentImage.attachment.isUploading
+            }</attribute>
         </xpath>
     </t>
 
     <t t-inherit="mail.AttachmentCard" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[1]" position="attributes">
-            <attribute name="t-att-class">{'d-none': AttachmentCard.attachment.nextcloud_attachment}</attribute>
+        <xpath expr="//div[hasclass('o_AttachmentCard')]" position="attributes">
+            <attribute name="t-att-class">{
+                'hide-not-nextcloud': attachmentCard.attachment.nextcloud_attachment,
+                'o-downloadable': !attachmentCard.attachmentList.composerView,
+                'o-isUploading': attachmentCard.attachment.isUploading,
+                'o-viewable': attachmentCard.attachment.isViewable,
+            }</attribute>
         </xpath>
     </t>
 

@@ -18,7 +18,8 @@
             'nextcloud/static/src/**/*.xml',
         ],
         'web.assets_backend': [
-            'nextcloud/static/src/**/*.js'
+            'nextcloud/static/src/**/*.js',
+            'nextcloud/static/src/**/*.scss',
         ],
     }
 }
