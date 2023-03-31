@@ -19,7 +19,8 @@
             'bf_nextcloud/static/src/**/*.xml',
         ],
         'web.assets_backend': [
-            'bf_nextcloud/static/src/**/*.js'
+            'bf_nextcloud/static/src/**/*.js',
+            'bf_nextcloud/static/src/**/*.scss',
         ],
     }
 }
