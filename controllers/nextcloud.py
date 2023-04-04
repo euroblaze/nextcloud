@@ -100,7 +100,6 @@ class BinaryNextCloud(http.Controller):
     def upload_attachment_nextcloud_documents(self, folder_id=False):
         files = request.httprequest.files.getlist('ufile')
         Model = request.env['ir.attachment']
-
         url = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_url')
         username = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_username')
         password = request.env['ir.config_parameter'].sudo().get_param('nextcloud.nextcloud_password')
@@ -146,6 +145,7 @@ class BinaryNextCloud(http.Controller):
                 'attachment_id': attachment.id,
                 'folder_id': folder_id,
             })
+        return json.dumps({})
 
     @http.route([
         '/web/binary/upload_attachment_nextcloud/<string:res_model>/<string:res_id>'
