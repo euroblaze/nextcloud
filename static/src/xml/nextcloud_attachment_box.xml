@@ -9,6 +9,11 @@
                     <t t-foreach="attachmentList.attachmentImages" t-as="attachmentImage"
                        t-key="attachmentImage.localId">
                         <div class="col-lg-2 col-6" t-if="attachmentImage.attachment.nextcloud_attachment">
+                        <div style="right: 0; position: absolute;" class="o_AttachmentImage_action o_AttachmentImage_actionUnlink text-center"
+                             t-att-class="{'o-pretty': attachmentImage.attachmentList.composerView}" tabindex="0" aria-label="Remove" role="menuitem" t-on-click="attachmentImage.onClickUnlink" title="Remove"
+                        >
+                            <i class="fa fa-trash"/>
+                        </div>
                             <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
                                 <a t-att-href="attachmentImage.attachment.nextcloud_share_link"
@@ -20,6 +25,9 @@
                 <div class="row o_AttachmentList_partialList o_AttachmentList_partialListNonImages">
                     <t t-foreach="attachmentList.attachmentCards" t-as="attachmentCard" t-key="attachmentCard.localId">
                         <div class="col-lg-2 col-6" t-if="attachmentCard.attachment.nextcloud_attachment">
+                            <div style="right: 0; position: absolute;" class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemUnlink d-flex justify-content-center align-items-center" t-att-class="{ 'o-pretty position-absolute': attachmentCard.attachmentList.composerView }" tabindex="0" aria-label="Remove" role="menuitem" t-on-click="attachmentCard.onClickUnlink" title="Remove">
+                                <i class="fa fa-trash"/>
+                            </div>
                             <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
                                 <a t-attf-href="attachmentCard.attachment.nextcloud_share_link"
