@@ -6,7 +6,6 @@
 - https://nextcloud.com/
 - It's Opensource and made in Germany.
 
-
 ## What does this module do?
 
 - Allow file links to be stored/shown on Odoo, while the actual files are stored on NextCloud.
@@ -14,6 +13,11 @@
 ## How does it fit into Odoo?
 
 - Document attachments can be uploaded to NextCloud, and links are posted on OdooChatter. This keeps the Odoo ERP lean.
+
+## Where is NextCloud installed?
+
+- NC is installed on a separate machine, recommendably in the same datacenter/cluster.
+- Odoo and NC communicate via NC's API, including filetransfer.
 
 ## What new developments are foreseen?
 
