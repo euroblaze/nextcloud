@@ -20,3 +20,8 @@
 1. Better file organisation on each document.
 2. Central overview of all NC documents uploaded.
 3. Improve config UI.
+4. Improve overall UX and fix edge-case bugs.
+
+## Versions
+
+- Code is available for Odoo v15 and v16
