@@ -1,6 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
+    <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_AttachmentImage_actionUnlink')]" position="before">
+            <div t-if="!attachmentImage.attachment.nextcloud_attachment and !attachmentImage.attachment.isNextCloudUploading"
+                class="o_AttachmentImage_action o_AttachmentImage_actionUploadNextcloud text-center"     
+                tabindex="0" aria-label="Upload to Nextcloud" role="menuitem"
+                t-on-click="attachmentImage.attachment.onClickUploadNextcloud"
+                title="Upload to Nextcloud">
+                <i class="fa fa-upload"/>
+            </div>
+            <div t-if="!attachmentImage.attachment.nextcloud_attachment and attachmentImage.attachment.isNextCloudUploading"
+                class="o_AttachmentImage_action o_AttachmentImage_actionNextcloudUploading text-center" 
+                tabindex="0" aria-label="Uploading to Nextcloud" role="menuitem" title="Uploading to Nextcloud">
+                <i class="fa fa-refresh fa-spin fa-fw"></i>
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div t-if="attachmentImage.attachment.nextcloud_attachment"
+                class="o_AttachmentImage_actionNextcloudUploaded text-center"
+                style="color: #0082c9; font-size: 16px; background: rgba(255, 255, 255, 0.5); border-radius: 20px;"
+                tabindex="0" aria-label="Uploaded to Nextcloud" role="menuitem" title="Uploaded to Nextcloud">
+                <i class="fa fa-check-circle"/>
+            </div>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.AttachmentCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_AttachmentCard_asideItemUnlink')]" position="before">
+            <!-- Upload Nextcloud button -->
+            <t t-if="!attachmentCard.attachment.nextcloud_attachment">
+                <div t-if="!attachmentCard.attachment.isNextCloudUploading" class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemUploadNextcloud d-flex justify-content-center align-items-center" 
+                    tabindex="0" aria-label="Upload to Nextcloud" role="menuitem" t-on-click="attachmentCard.attachment.onClickUploadNextcloud"
+                    title="Upload to Nextcloud">
+                    <i class="fa fa-upload"/>
+                </div>
+                <div t-if="attachmentCard.attachment.isNextCloudUploading" class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemNextcloudUploading d-flex justify-content-center align-items-center" 
+                    tabindex="0" aria-label="Uploading to Nextcloud" role="menuitem" title="Uploading to Nextcloud">
+                    <i class="fa fa-refresh fa-spin fa-fw"></i>
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </t>
+            <!-- Uploaded status -->
+            <t t-if="attachmentCard.attachment.nextcloud_attachment">
+                <div class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemNextcloudUploaded d-flex justify-content-center align-items-center"
+                    style="color: #0082c9;"
+                    tabindex="0" aria-label="Uploaded to Nextcloud" role="menuitem" title="Uploaded to Nextcloud">
+                    <i class="fa fa-check-circle"/>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
     <t t-name="mail.AttachmentImage.NextCloud" owl="1">
         <div role="menu" t-att-aria-label="attachmentImage and attachmentImage.attachment.displayName">
             <t t-if="attachmentImage">

@@ -7,7 +7,7 @@ import {
 import { attr } from '@mail/model/model_field';
 import { insertAndReplace } from '@mail/model/model_field_command';
 
-registerInstancePatchModel('mail.thread', 'bf_nextcloud/static/src/js/nextcloud_attachments.js', {
+registerInstancePatchModel('mail.thread', 'nextcloud/static/src/js/nextcloud_attachments.js', {
 
     //----------------------------------------------------------------------
     // Public
@@ -32,4 +32,3 @@ registerInstancePatchModel('mail.thread', 'bf_nextcloud/static/src/js/nextcloud_
         this.update({ areAttachmentsLoaded: true });
     }
 });
-

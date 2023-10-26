@@ -7,18 +7,22 @@ import {
 } from'@mail/model/model_core';
 import { attr } from '@mail/model/model_field';
 import { clear, insert } from '@mail/model/model_field_command';
-import { useAutofocus, useService } from "@web/core/utils/hooks";
 
-registerFieldPatchModel('mail.attachment', 'bf_nextcloud/static/src/js/attachment.js', {
+import core from 'web.core';
+
+registerFieldPatchModel('mail.attachment', 'nextcloud/static/src/js/attachment.js', {
     nextcloud_attachment: attr({
         compute: '_computeNextCloud',
     }),
     nextcloud_share_link: attr({
         compute: '_computeNextCloudShare',
     }),
+    isNextCloudUploading: attr({
+        default: false,
+    }),
 });
 
-registerClassPatchModel('mail.attachment', 'bf_nextcloud/static/src/js/attachment.js', {
+registerClassPatchModel('mail.attachment', 'nextcloud/static/src/js/attachment.js', {
     /**
      * @override
      */
@@ -34,7 +38,7 @@ registerClassPatchModel('mail.attachment', 'bf_nextcloud/static/src/js/attachmen
     },
 });
 
-registerInstancePatchModel('mail.attachment', 'bf_nextcloud/static/src/js/attachment.js', {
+registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachment.js', {
     _computeNextCloud() {
         const nextcloud_attachment = this.nextcloud_attachment;
         if (nextcloud_attachment) {
@@ -51,6 +55,59 @@ registerInstancePatchModel('mail.attachment', 'bf_nextcloud/static/src/js/attach
         return clear();
     },
 
+    /**
+ * @override
+ */
+    _created() {
+        this._super(...arguments);
+        // defined onClickUpload
+        this.onClickUploadNextcloud = this.onClickUploadNextcloud.bind(this);
+    },
 
+    /**
+     * Handles click on download icon.
+     *
+     * @param {MouseEvent} ev
+     */
+    onClickUploadNextcloud(ev) {
+        ev.stopPropagation();
+        this.UploadAttachmentNextcloud();
+    },
 
+    /**
+     * @private
+     * @param {Object} param0
+     * @returns {FormData}
+     */
+    _createFormDataNextcloud() {
+        const formData = new window.FormData();
+        formData.append('csrf_token', core.csrf_token);
+        formData.append('attachment_id', this.id);
+        return formData;
+    },
+
+    async UploadAttachmentNextcloud() {
+        var self = this;
+        self.update({'isNextCloudUploading': true})
+        try {
+            const response = await this.env.browser.fetch('/mail/attachment/uploadnextcloud', {
+                method: 'POST',
+                body: this._createFormDataNextcloud()
+            });
+            const attachmentData = await response.json();
+            if (attachmentData.error) {
+                self.env.services['notification'].notify({
+                    type: 'danger',
+                    message: attachmentData.error,
+                });
+                self.update({'isNextCloudUploading': false})
+                return;
+            }
+            self.update(attachmentData);
+        } catch (e) {
+            if (e.name !== 'AbortError') {
+                throw e;
+            }
+        }
+    },
 });

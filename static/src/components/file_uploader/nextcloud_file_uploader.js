@@ -231,7 +231,7 @@ export class FileUploaderNextcloud extends Component {
             const { fileUploadId, formData } = fileUploadData;
             this._fileUploads[fileUploadId] = fileUploadData;
             xhr.upload.addEventListener("progress", ev => {
-                this._updateFileUploadProgress(fileUploadId, ev);
+                self._updateFileUploadProgress(fileUploadId, ev);
             });
             xhr.onload = async () => {
                 resolve();

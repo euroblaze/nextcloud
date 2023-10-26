@@ -12,7 +12,7 @@
 
 ## How does it fit into Odoo?
 
-- Document attachments can be uploaded to NextCloud, and links are posted on OdooChatter. This keeps the Odoo ERP lean.
+- Attachments can be uploaded to NextCloud, and links are posted on OdooChatter. This keeps the Odoo ERP lean.
 
 ## Where is NextCloud installed?
 
@@ -21,8 +21,8 @@
 
 ## What new developments are foreseen?
 
-1. Better file organisation on each document.
-2. Central overview of all NC documents uploaded.
+1. Better file organisation on each Attachment.
+2. Central overview of all NC attachments uploaded.
 3. Improve config UI.
 4. Improve overall UX and fix edge-case bugs.
 

@@ -1,37 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="bf_nextcloud.NextCloudAttachmentList" owl="1">
+    <t t-name="nextcloud.NextCloudAttachmentList" owl="1">
         <div class="o_AttachmentList">
             <t t-if="attachmentList">
                 <div class="row o_AttachmentList_partialList o_AttachmentList_partialListImages"
                      style="padding: 1rem 1rem 3rem;">
                     <t t-foreach="attachmentList.attachmentImages" t-as="attachmentImage"
                        t-key="attachmentImage.localId">
-                        <div class="col-lg-2 col-6" t-if="attachmentImage.attachment.nextcloud_attachment">
-                        <div style="right: 0; position: absolute;" class="o_AttachmentImage_action o_AttachmentImage_actionUnlink text-center"
-                             t-att-class="{'o-pretty': attachmentImage.attachmentList.composerView}" tabindex="0" aria-label="Remove" role="menuitem" t-on-click="attachmentImage.onClickUnlink" title="Remove"
+                        <div class="col-lg-6 col-6" t-if="attachmentImage.attachment.nextcloud_attachment">
+                        <div style="right: 5px; position: absolute;"
+                            class="o_AttachmentImage_action o_AttachmentImage_actionUnlink text-center"
+                             t-att-class="{'o-pretty': attachmentImage.attachmentList.composerView}"
+                             tabindex="0" aria-label="Remove" role="menuitem"
+                             t-on-click="attachmentImage.onClickUnlink" title="Remove"
                         >
                             <i class="fa fa-trash"/>
                         </div>
-                            <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
-                                <a t-att-href="attachmentImage.attachment.nextcloud_share_link"
-                                   t-esc="attachmentImage.attachment.displayName"/>
+                                <a target="_blank" t-att-href="attachmentImage.attachment.nextcloud_share_link">
+                                    <img src="/nextcloud/static/description/nextcloud.png" class="w-100"/>
+                                    <p t-esc="attachmentImage.attachment.displayName"/>
+                                </a>
                             </div>
                         </div>
                     </t>
                 </div>
                 <div class="row o_AttachmentList_partialList o_AttachmentList_partialListNonImages">
                     <t t-foreach="attachmentList.attachmentCards" t-as="attachmentCard" t-key="attachmentCard.localId">
-                        <div class="col-lg-2 col-6" t-if="attachmentCard.attachment.nextcloud_attachment">
-                            <div style="right: 0; position: absolute;" class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemUnlink d-flex justify-content-center align-items-center" t-att-class="{ 'o-pretty position-absolute': attachmentCard.attachmentList.composerView }" tabindex="0" aria-label="Remove" role="menuitem" t-on-click="attachmentCard.onClickUnlink" title="Remove">
+                        <div class="col-lg-6 col-6" t-if="attachmentCard.attachment.nextcloud_attachment">
+                            <div style="right: 5px; position: absolute;"
+                                class="o_AttachmentCard_asideItem_Nextcloud o_AttachmentCard_asideItemUnlink d-flex justify-content-center align-items-center"
+                                t-att-class="{ 'o-pretty position-absolute': attachmentCard.attachmentList.composerView }"
+                                tabindex="0" aria-label="Remove" role="menuitem"
+                                t-on-click="attachmentCard.onClickUnlink" title="Remove">
                                 <i class="fa fa-trash"/>
                             </div>
-                            <img src="/bf_nextcloud/static/description/nextcloud.png" class="w-100"/>
                             <div>
-                                <a t-attf-href="attachmentCard.attachment.nextcloud_share_link"
-                                   t-esc="attachmentCard.attachment.displayName"/>
+                                <a target="_blank" t-att-href="attachmentCard.attachment.nextcloud_share_link">
+                                    <img src="/nextcloud/static/description/nextcloud.png" class="w-100"/>
+                                    <p t-esc="attachmentCard.attachment.displayName"/>
+                                </a>
                             </div>
                         </div>
                     </t>
@@ -41,35 +50,83 @@
     </t>
 
     <t t-inherit="mail.AttachmentBox" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[hasclass('o_AttachmentBox_content')]" position="inside">
-            <div class="o_AttachmentBox_title">
-                <hr class="o_AttachmentBox_dashedLine"/>
-                <span class="o_AttachmentBox_titleText">
-                    Nextcloud Attachments
-                </span>
-                <hr class="o_AttachmentBox_dashedLine"/>
+        <xpath expr="//div[hasclass('o_AttachmentBox')]" position="replace">
+            <div class="o_AttachmentBox">
+                <div class="AttachmentBoxNative" t-if="chatter">
+                    <div class="o_AttachmentBox_title">
+                        <hr class="o_AttachmentBox_dashedLine"/>
+                        <span class="o_AttachmentBox_titleText">
+                            Attachments
+                        </span>
+                        <hr class="o_AttachmentBox_dashedLine"/>
+                    </div>
+                    <div class="o_AttachmentBox_content">
+                        <t t-if="isDropZoneVisible.value">
+                            <DropZone
+                                class="o_AttachmentBox_dropZone"
+                                t-on-o-dropzone-files-dropped="_onDropZoneFilesDropped"
+                                t-ref="dropzone"
+                            />
+                        </t>
+                        <t t-if="chatter.attachmentList">
+                            <AttachmentList
+                                class="o_attachmentBox_attachmentList"
+                                attachmentListLocalId="chatter.attachmentList.localId"
+                                t-on-o-attachment-removed="_onAttachmentRemoved"
+                            />
+                        </t>
+                        <button class="o_AttachmentBox_buttonAdd btn btn-link" type="button" t-on-click="_onClickAdd">
+                            <i class="fa fa-plus-square"/>
+                            Add attachments
+                        </button>
+                    </div>
+                    <FileUploader
+                        threadLocalId="chatter.thread.localId"
+                        t-on-o-attachment-created="_onAttachmentCreated"
+                        t-ref="fileUploader"
+                    />
+                </div>
+                <!-- Hidden Attachment Box Nextcloud -->
+                <!-- <div class="AttachmentBoxNextCloud" t-if="chatter">
+                    <div class="o_AttachmentBox_title">
+                        <hr class="o_AttachmentBox_dashedLine"/>
+                        <span class="o_AttachmentBox_titleText">
+                            Nextcloud Attachments
+                        </span>
+                        <hr class="o_AttachmentBox_dashedLine"/>
+                    </div>
+                    <div class="o_AttachmentBox_content">
+                        <t t-if="isDropZoneVisible.value">
+                            <DropZone
+                                class="o_AttachmentBox_dropZone"
+                                t-on-o-dropzone-files-dropped="_onDropZoneFilesNextCloudDropped"
+                                t-ref="dropzone"
+                            />
+                        </t>
+                        <t t-if="chatter.attachmentList">
+                            <NextCloudAttachmentList
+                                    class="o_attachmentBox_attachmentList"
+                                    attachmentListLocalId="chatter.attachmentList.localId"
+                                    t-on-o-attachment-removed="_onAttachmentRemoved"
+                            />
+                        </t>
+                        <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload"
+                                t-on-click="_onClickAddNextcloud">
+                                    <i class="fa fa-cloud-upload"/>
+                            Nextcloud Upload
+                        </button>
+                    </div>
+                    <FileUploaderNextcloud
+                            threadLocalId="chatter.thread.localId"
+                            t-on-o-attachment-created="_onAttachmentCreated"
+                            t-ref="fileUploaderNextcloud"
+                    />
+                </div> -->
             </div>
-            <t t-if="chatter.attachmentList">
-                <NextCloudAttachmentList
-                        class="o_attachmentBox_attachmentList"
-                        attachmentListLocalId="chatter.attachmentList.localId"
-                        t-on-o-attachment-removed="_onAttachmentRemoved"
-                />
-            </t>
-            <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload"
-                    t-on-click="_onClickAddNextcloud">
-                        <i class="fa fa-cloud-upload"/>
-                Nextcloud Upload
-            </button>
-            <FileUploaderNextcloud
-                    threadLocalId="chatter.thread.localId"
-                    t-on-o-attachment-created="_onAttachmentCreated"
-                    t-ref="fileUploaderNextcloud"
-            />
         </xpath>
     </t>
 
-    <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
+    <!-- <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('o_AttachmentImage')]" position="attributes">
             <attribute name="t-att-class">{
                 'hide-not-nextcloud': attachmentImage.attachment.nextcloud_attachment,
@@ -87,6 +144,6 @@
                 'o-viewable': attachmentCard.attachment.isViewable,
             }</attribute>
         </xpath>
-    </t>
+    </t> -->
 
 </templates>

@@ -1,18 +1,27 @@
 /** @odoo-module **/
 
-import { csrf_token, _t } from 'web.core';
-import { registerNewModel } from '@mail/model/model_core';
+import { _t } from 'web.core';
+import { useDragVisibleDropZone } from '@mail/component_hooks/use_drag_visible_dropzone/use_drag_visible_dropzone';
 import { AttachmentBox } from '@mail/components/attachment_box/attachment_box'
-import { FileUploader } from '@mail/components/file_uploader/file_uploader'
-import { AttachmentCard } from '@mail/components/attachment_card/attachment_card'
-import { AttachmentImage } from '@mail/components/attachment_image/attachment_image'
 import { patch } from "@web/core/utils/patch";
-import { factory } from '@mail/models/attachment/attachment'
+const { useRef } = owl.hooks;
 
 patch(AttachmentBox.prototype, "nextcloud.upload_patch", {
+    setup() {
+        this._super(...arguments);
+        this.isDropZoneNextCloudVisible = useDragVisibleDropZone();
+        this._FileUploaderNextcloudRef = useRef('FileUploaderNextcloud');
+    },
+
     _onClickAddNextcloud(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         $('input.o_FileUploaderNextcloud').click();
+    },
+
+    async _onDropZoneFilesNextCloudDropped(ev) {
+        ev.stopPropagation();
+        await this._FileUploaderNextcloudRef.comp.uploadFiles(ev.detail.files);
+        this.isDropZoneNextCloudVisible.value = false;
     }
 });

@@ -1,0 +1,45 @@
+<odoo>
+    <record id="view_res_company_form_inherit_nextcloud" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.nextcloud</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="groups_id" eval="[(4,ref('base.group_system'))]"/>
+        <field name="arch" type="xml">
+            <xpath expr='//page[@name="general_info"]' position="after">
+                <page string="NextCloud Settings" name="nextcloud_settings">
+                    <group>
+                        <group>
+                            <field name="nextcloud_url"/>
+                            <field name="nextcloud_folder"/>
+                        </group>
+                        <group>
+                            <field name="nextcloud_username"/>
+                            <field name="nextcloud_password" password="True"/>
+                        </group>
+                        <button name="nextcloud_test_connection" type="object"
+                            string="NextCloud Test Connection"
+                            class="btn-primary"/>
+                    </group>
+                    <group string="Folder Mapping">
+                        <field name="nextcloud_folder_mapping_ids" nolabel="1">
+                            <tree>
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="model_name"/>
+                                <field name="domain"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="name"/>
+                                    <field name="model_name"/>
+                                    <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
+                                </group>
+                            </form>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

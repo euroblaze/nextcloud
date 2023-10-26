@@ -1,3 +1,42 @@
 .hide-not-nextcloud {
     display: none !important;
 }
+.o_AttachmentCard .o_image {
+    width: 60px;
+    height: 60px;
+}
+.o_AttachmentCard_asideItem {
+    padding: 3px;
+    font-size: 16px;
+}
+.o_AttachmentCard_asideItem_Nextcloud {
+    background: rgba(0, 0, 0, 0.2);
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+}
+.o_AttachmentCard_asideItemUnlink:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+.o_AttachmentCard_asideItemUploadNextcloud {
+    cursor: pointer;
+
+    &:hover {
+        background-color: gray('400');
+    }
+}
+.o_AttachmentImage_imageOverlay {
+    opacity: 1;
+    color: #1f1f1f
+}
+.o_AttachmentImage_actions {
+    justify-content: flex-start;
+}
+.o_AttachmentImage_action {
+    background: rgba(255, 255, 255, 0.5);
+    margin: 3px;
+}
+.o_AttachmentImage_action:hover {
+    color: #cfcfcf;
+    background: rgba(150, 150, 150, 0.5);
+}
