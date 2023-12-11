@@ -174,13 +174,26 @@
                     </t>
                     <t t-if="attachmentCard.hasDeleteConfirmDialog">
                         <AttachmentDeleteConfirmDialog
-                                attachmentLocalId="attachmentCard.attachment.localId"
-                                t-on-dialog-closed="attachmentCard.onDeleteConfirmDialogClosed"
+                            attachmentLocalId="attachmentCard.attachment.localId"
+                            t-on-dialog-closed="attachmentCard.onDeleteConfirmDialogClosed"
                         />
                     </t>
                 </div>
             </t>
         </div>
+    </t>
+
+    <t t-inherit="mail.ChatterTopbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button[hasclass('o_ChatterTopbar_buttonAttachments')]" position="before">
+            <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonDownloadNextcloud" type="button"
+                t-on-click="chatter.onClickDownloadNextcloud">
+                <i class="fa fa-download" aria-label="Download file from Nextcloud"/>
+            </button>
+            <!-- <button class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonDownloadNextcloud" type="button"
+                t-on-click="chatter.onClickOpenFileExploreDialog">
+                <i class="fa fa-star" aria-label="Download file from Nextcloud"/>
+            </button> -->
+        </xpath>
     </t>
 
 </templates>
