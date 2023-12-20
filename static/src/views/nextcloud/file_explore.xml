@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="nextcloud.FileExplore" owl="1">
+        <div id="nextcloud_fileexplore" style="height: 380px">
+            <div class="fe_fileexplorer_wrap">
+                <div class="fe_fileexplorer_dropzone_wrap">
+                    <div class="fe_fileexplorer_inner_wrap fe_fileexplorer_inner_wrap_focused">
+                        <div class="fe_fileexplorer_toolbar">
+                            <div class="fe_fileexplorer_navtools">
+                                <!-- <button class="fe_fileexplorer_navtool_back" title="Back to '...' (Alt + Left Arrow)"></button>
+                                <button class="fe_fileexplorer_navtool_forward fe_fileexplorer_disabled" title="Forward to '...' (Alt + Right Arrow)"></button>
+                                <button class="fe_fileexplorer_navtool_history" title="Recent locations"></button>
+                                <button class="fe_fileexplorer_navtool_up" title="Up to '...' (Alt + Up Arrow)"></button> -->
+                            </div>
+                            <div class="fe_fileexplorer_path_wrap">
+                                <div class="fe_fileexplorer_path_icon">
+                                    <div class="fe_fileexplorer_path_icon_inner"></div>
+                                </div>
+                                <div class="fe_fileexplorer_path_segments_scroll_wrap">
+                                    <div class="fe_fileexplorer_path_segments_wrap">
+                                        <t t-foreach="model.breadcrumbs" t-as="breadcrumb" t-key="breadcrumb.id">
+                                            <div class="fe_fileexplorer_path_segment_wrap">
+                                                <button class="fe_fileexplorer_path_name" t-on-click="model.openFolder(breadcrumb.id)">
+                                                    <t t-esc="breadcrumb.folder_name"/>
+                                                </button>
+                                                <button class="fe_fileexplorer_path_opts" t-on-click="model.openFolder(breadcrumb.id)"></button>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fe_fileexplorer_body_wrap">
+                            <div class="fe_fileexplorer_folder_tools_scroll_wrap">
+                                <div class="fe_fileexplorer_folder_tools">
+                                    <!-- <button class="fe_fileexplorer_folder_tool_new_folder" title="New folder" tabindex="0"></button> -->
+                                    <!-- <button class="fe_fileexplorer_folder_tool_new_file" title="New file" tabindex="-1"></button> -->
+                                    <button class="fe_fileexplorer_folder_tool_upload" t-on-click="model.onUploadClicked"
+                                    t-if="model.fileexplore_mode == 'upload'"
+                                    title="Upload" t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}" tabindex="-1"></button>
+                                    <button class="fe_fileexplorer_folder_tool_download" t-on-click="model.onDownloadClicked"
+                                    t-if="model.fileexplore_mode == 'download'"
+                                    t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}" title="Download" tabindex="-1"></button>
+                                    <div class="fe_fileexplorer_folder_tool_separator"></div>
+                                    <!-- <button class="fe_fileexplorer_folder_tool_copy fe_fileexplorer_disabled" title="Copy" tabindex="-1"></button>
+                                    <button class="fe_fileexplorer_folder_tool_paste" title="Paste" tabindex="-1"></button>
+                                    <button class="fe_fileexplorer_folder_tool_cut" title="Cut" tabindex="-1"></button>
+                                    <button class="fe_fileexplorer_folder_tool_delete" title="Delete" tabindex="-1"></button> -->
+                                </div>
+                            </div>
+                            <div class="fe_fileexplorer_items_scroll_wrap">
+                                <div class="fe_fileexplorer_items_scroll_wrap_inner">
+                                    <div class="fe_fileexplorer_items_wrap fe_fileexplorer_items_focus">
+                                        <t t-foreach="model.current_folder_data" t-as="record" t-key="record.id">
+                                            <div class="fe_fileexplorer_item_wrap" t-on-click="model.onItemClicked"
+                                                t-attf-id="{{record.folder and 'folder' or 'file'}}_{{record.id}}">
+                                                <div class="fe_fileexplorer_item_wrap_inner" tabindex="0">
+                                                    <div t-if="record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_folder">
+                                                    </div>
+                                                    <div t-if="!record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file
+                                                    fe_fileexplorer_item_icon_ext_t" t-att-data-ext="record.file_type or 'TXT'"></div>
+                                                    <div class="fe_fileexplorer_item_text"><t t-esc="record.folder_name"/></div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        
+                                        <!-- <div class="fe_fileexplorer_item_wrap fe_fileexplorer_item_selected">
+                                            <div class="fe_fileexplorer_item_wrap_inner" tabindex="-1">
+                                                <div class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file fe_fileexplorer_item_icon_ext_m" data-ext="MP3"></div>
+                                                <div class="fe_fileexplorer_item_text">Amp3_file.mp3</div>
+                                            </div>
+                                        </div>
+                                        <div class="fe_fileexplorer_item_wrap">
+                                            <div class="fe_fileexplorer_item_wrap_inner" tabindex="-1">
+                                                <div class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file fe_fileexplorer_item_icon_ext_j" data-ext="jpg"></div>
+                                                <div class="fe_fileexplorer_item_text">test.jpg</div>
+                                            </div>
+                                        </div> -->
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fe_fileexplorer_statusbar_wrap">
+                            <div class="fe_fileexplorer_statusbar_text_wrap">
+                                <div class="fe_fileexplorer_statusbar_text_segment_wrap">
+      5 items
+                                </div>
+                                <div class="fe_fileexplorer_statusbar_text_segment_wrap">
+      1 item selected
+                                </div>
+                            </div>
+                            <div class="fe_fileexplorer_action_wrap">
+                                <div class="fe_fileexplorer_action_upload_wrap">
+                                    <div class="fe_fileexplorer_action_upload_msg_wrap"> </div>
+                                    <div class="fe_fileexplorer_action_upload_msg_wrap fe_fileexplorer_action_upload_msg_wrap_last">----</div>
+                                    <div class="fe_fileexplorer_action_upload_cancel_wrap"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

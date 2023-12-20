@@ -79,7 +79,7 @@ class BinaryNextCloud(http.Controller):
                 else:
                     exist = True
             put_url = url + f'/remote.php/dav/files/{username}/{file_path}'
-            put_request = requests.put(put_url, headers=head, auth=(username, password), data=mydata)
+            requests.put(put_url, headers=head, auth=(username, password), data=mydata)
             params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
             post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
             post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
@@ -104,34 +104,11 @@ class BinaryNextCloud(http.Controller):
             attachment._post_add_create()
 
     @http.route('/mail/attachment/uploadnextcloud', methods=['POST'], type='http', auth='public')
-    def mail_attachment_upload(self, attachment_id, **kwargs):
+    def mail_attachment_upload(self, attachment_id, folder_id=False, **kwargs):
         attachment = request.env['ir.attachment'].browse(int(attachment_id))
         if not attachment:
             attachmentData = {'error': _("Missing attachment ID.")}
-        company = attachment.company_id
-        nextcloud_params = company.sudo().get_nextcloud_information(
-            res_model=attachment.res_model, res_id=attachment.res_id)
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        folder = nextcloud_params.get('nextcloud_folder')
-        head = {'OCS-APIRequest': 'true'}
-        exist, index = False, 1
-        path_arr = [attachment.name]
-        if folder:
-            path_arr.insert(0, folder)
-        file_path = '/'.join(path_arr)
-        while not exist:
-            get_url = url + f'/remote.php/dav/files/{username}/{file_path}'
-            get_call = requests.get(get_url, headers=head, auth=(username, password))
-            if get_call.status_code == 200:
-                file_path = '(%s).'.join(file_path.rsplit('.', 1)) % str(index)
-                index += 1
-            else:
-                exist = True
-        share_url = url + f'/remote.php/dav/files/{username}/{file_path}'
-        file_data = base64.b64decode(attachment.datas)
-        put_request = requests.put(share_url, headers=head, auth=(username, password), data=file_data)
+        attachmentData = attachment.request_upload_file_nextcloud(folder_id)
         # COMMENT: use it when share file to public
         # params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
         # post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
@@ -144,14 +121,7 @@ class BinaryNextCloud(http.Controller):
         #         if not elem.tag == node.tag:
         #             if elem.tag == 'url':
         #                 share_url = elem.text
-        if put_request.status_code == 201:
-            attachmentData = {
-                'nextcloud_attachment': True,
-                'nextcloud_share_link': share_url,
-            }
-            attachment.write(attachmentData)
-        else:
-            attachmentData = {'error': _("Cannot upload file to NextCloud.")}
+
         return request.make_response(
             data=json.dumps(attachmentData),
             headers=[('Content-Type', 'application/json')]

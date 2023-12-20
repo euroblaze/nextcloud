@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_nextcloud_folder_mapping,access.nextcloud.folder.mapping,model_nextcloud_folder_mapping,base.group_user,1,1,1,1
+access_nextcloud_folder,access.nextcloud.folder,model_nextcloud_folder,base.group_user,1,1,1,1
+access_select_nextcloud_folder_wizard,access.select.nextcloud.folder.wizard,model_select_nextcloud_folder_wizard,base.group_user,1,1,1,1

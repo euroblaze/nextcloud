@@ -4,23 +4,22 @@
         <field name="model">select.nextcloud.folder.wizard</field>
         <field name="priority" eval="1"/>
         <field name="arch" type="xml">
-            <form>
+            <file_explore_view>
                 <sheet>
                     <group>
                         <group>
-                            <field name="quant_id" invisible="1"/>
-                            <field name="virtual_location_id"/>
-                        </group>
-                        <group>
-                            <field name="qty" />
+                            <field name="attachment_id" readonly="1" force_save="1"/>
+                            <field name="folder_id" options="{'no_open': True, 'no_create': True,
+                                'no_quick_create': True}"/>
+                            <field name="res_model" invisible="0"/>
                         </group>
                     </group>
                 </sheet>
                 <footer>
-                    <button name="confirm" type="object" string="Confirm" class="oe_highlight"/>
+                    <button name="button_upload" type="object" string="Confirm" class="oe_highlight"/>
                     <button string="Cancel" special="cancel"/>
                 </footer>
-            </form>
+            </file_explore_view>
         </field>
     </record>
 </odoo>

@@ -1,0 +1,47 @@
+<odoo>
+    <record id="nextcloud_folder_view_form" model="ir.ui.view">
+        <field name="name">nextcloud.folder.view.form</field>
+        <field name="model">nextcloud.folder</field>
+        <field name="arch" type="xml">
+            <form string="Nextcloud Folder">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="folder_name"/>
+                        <field name="parent_id" options="{'no_create': True,
+                        'no_create_edit': True,
+                        'no_quick_create': True}"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    <group string="Child Folders">
+                        <field name="child_ids" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="nextcloud_folder_view_tree" model="ir.ui.view">
+        <field name="name">nextcloud.folderview.tree</field>
+        <field name="model">nextcloud.folder</field>
+        <field name="arch" type="xml">
+            <tree string="Nextcloud Folder">
+                <field name="name"/>
+                <!-- <field name="parent_id"/> -->
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="nextcloud_file_folder_action" model="ir.actions.act_window">
+        <field name="name">Nextcloud Files/Folders</field>
+        <field name="res_model">nextcloud.folder</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_nextcloud_file_folder"
+        action="nextcloud_file_folder_action"
+        sequence="99"
+        parent="base.menu_custom" name="Nextcloud Files/Folders"/>
+
+</odoo>

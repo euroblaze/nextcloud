@@ -6,15 +6,14 @@ class SelectNextcloudFolderWizard(models.TransientModel):
     _description = 'Wizard select folder Nextcloud upload'
 
     attachment_id = fields.Many2one("ir.attachment")
-    res_id = fields.Integer()
-    res_model = fields.Char()
-    company_id = fields.Many2one("res.company")
+    # res_id = fields.Integer(related='attachment_id.res_id', store=True)
+    res_model = fields.Char(related='attachment_id.res_model', store=True)
+    company_id = fields.Many2one("res.company", related='attachment_id.company_id')
+    folder_id = fields.Many2one('nextcloud.folder', required=True)
 
-    def confirm(self):
-        company = self.company_id
-        nextcloud_params = company.sudo().get_nextcloud_information()
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        folder = nextcloud_params.get('nextcloud_folder')
-        return self.quant_id.update_value_ventor(self.qty, self.virtual_location_id.id)
+    def button_upload(self):
+        self.attachment_id.request_upload_file_nextcloud()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }

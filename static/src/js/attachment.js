@@ -7,6 +7,7 @@ import {
 } from'@mail/model/model_core';
 import { attr } from '@mail/model/model_field';
 import { clear, insert } from '@mail/model/model_field_command';
+import { FileExploreDialog } from "../views/nextcloud/file_explore_dialog";
 
 import core from 'web.core';
 
@@ -71,7 +72,32 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
      */
     onClickUploadNextcloud(ev) {
         ev.stopPropagation();
-        this.UploadAttachmentNextcloud();
+        var self = this;
+        const action = {
+            type: 'ir.actions.act_window',
+            name: this.env._t("Choose Nextcloud Folder to Upload"),
+            res_model: 'select.nextcloud.folder.wizard',
+            view_mode: 'file_explore_view',
+            views: [[false, 'file_explore_view']],
+            target: 'new',
+            context: {
+                attachment_id: this.id,
+                fileexplore_mode: 'upload',
+                origin_resmodel: this.originThread.model,
+                origin_resid: this.originThread.id,
+            },
+            res_id: false,
+            domain: [],
+        };
+        return this.env.bus.trigger('do-action', {
+            action,
+            options: {
+                on_close: () => {
+                    self.originThread.refresh();
+                },
+            },
+        });
+        // this.UploadAttachmentNextcloud();
     },
 
     /**
