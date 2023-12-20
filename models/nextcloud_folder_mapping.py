@@ -12,10 +12,14 @@ class NextCloudFolderMapping(models.Model):
     _order = 'sequence'
 
     name = fields.Char(string='Name', required=True)
-    nextcloud_folder_id = fields.Many2one('nextcloud.folder', string='NextCloud Folder', required=True)
+    nextcloud_folder_id = fields.Many2one(
+        'nextcloud.folder', string='NextCloud Folder',
+        required=True, ondelete='cascade')
     company_id = fields.Many2one('res.company', required=True)
+    username = fields.Char()
     domain = fields.Text(default='[]', required=True)
-    model_name = fields.Selection(selection='_list_all_models', string='Model', required=True)
+    model_name = fields.Selection(selection='_list_all_models',
+                                  string='Model', required=True)
     sequence = fields.Integer(default=10)
 
     @api.model

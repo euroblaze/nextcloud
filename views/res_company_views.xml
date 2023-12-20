@@ -11,21 +11,21 @@
                         <group>
                             <field name="nextcloud_url"/>
                             <field name="nextcloud_folder_id" domain="[('folder', '=', True)]"
+                                invisible="1"
                                 options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                            <field name="nextcloud_folder"/>
+                            <field name="nextcloud_folder" invisible="1"/>
+
+                            <field name="nextcloud_username" string="User's Name"/>
+                            <field name="nextcloud_password" string="App Password" password="True"/>
                             <button name="nextcloud_test_connection" type="object"
-                                string="NextCloud Test Connection"
+                                string="Establish Nextcloud Connection"
                                 class="btn-primary"/>
-                        </group>
-                        <group>
-                            <field name="nextcloud_username"/>
-                            <field name="nextcloud_password" password="True"/>
                             <button name="sync_nextcloud_folder" type="object"
-                                string="Sync NextCloud Folder"
+                                string="Sync NextCloud Folder" invisible="1"
                                 class="btn-primary"/>
                         </group>
                     </group>
-                    <group string="Folder Mapping">
+                    <group string="Folder Mapping" invisible="1">
                         <field name="nextcloud_folder_mapping_ids" nolabel="1">
                             <tree>
                                 <field name="sequence" widget="handle"/>
@@ -40,7 +40,7 @@
                                 <group>
                                     <field name="name"/>
                                     <field name="nextcloud_folder_id"
-                                        domain="[('folder', '=', True)]"    
+                                        domain="[('folder', '=', True)]"
                                         options="{'no_create': True,
                                             'no_create_edit': True,
                                             'no_quick_create': True}"/>

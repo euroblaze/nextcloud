@@ -23,9 +23,13 @@ class NextCloudFolder(models.Model):
     sequence = fields.Integer(default=10)
     folder = fields.Boolean()
     file_type = fields.Char()
+    username = fields.Char()
+    active = fields.Boolean(default=True)
 
     @api.depends('name')
     def _compute_parent_id(self):
+        company = self.env.user.company_id.sudo()
+        username = company.nextcloud_username
         for rec in self:
             parent_id, folder_name = False, False
             if rec.name == '/':
@@ -33,13 +37,16 @@ class NextCloudFolder(models.Model):
             elif rec.name:
                 split_arr = rec.name.split('/')
                 if len(split_arr) > 1:
-                    parent = self.search([('name', '=', '/'.join(split_arr[:-1]))])
+                    parent = self.search([
+                        ('name', '=', '/'.join(split_arr[:-1])),
+                        ('username', '=', username)])
                     if parent:
                         parent_id = parent.id
                     folder_name = split_arr[-1]
                 else:
                     folder_name = rec.name
-                    parent_id = self.search([('name', '=', '/')]).id
+                    parent_id = self.search([('name', '=', '/'),
+                                             ('username', '=', username)]).id
             rec.parent_id = parent_id
             rec.folder_name = folder_name
 
@@ -81,6 +88,7 @@ class NextCloudFolder(models.Model):
         res_model = kwargs.get('res_model', False)
         res_id = kwargs.get('res_id', False)
         company = self.env.user.company_id.sudo()
+        domain += [('username', '=', company.nextcloud_username)]
         data = self.search_read(domain, fields=[], order="folder, id, parent_id, folder_name")
         folder_data = self.search_read(domain + [('folder', '=', True)], fields=[], order="id asc, parent_id, folder_name")
         nextcloud_params = company.get_nextcloud_information(

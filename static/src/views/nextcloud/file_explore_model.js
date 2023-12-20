@@ -105,6 +105,9 @@ export class FileExploreModel extends Model {
     onItemClicked(ev) {
         let $currentTarget = $(ev.target).parents('.fe_fileexplorer_item_wrap');
         let selected_info = $currentTarget.getAttributes().id;
+        if (selected_info === undefined) {
+            return;
+        }
         let identify_key = selected_info.split('_');
         let selected = $currentTarget.hasClass('fe_fileexplorer_item_selected');
         if (selected === true && identify_key[0] == 'folder') {

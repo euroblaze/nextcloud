@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="nextcloud.FileExplore" owl="1">
-        <div id="nextcloud_fileexplore">
+        <div id="nextcloud_fileexplore" style="height: 380px">
             <div class="fe_fileexplorer_wrap">
                 <div class="fe_fileexplorer_dropzone_wrap">
                     <div class="fe_fileexplorer_inner_wrap fe_fileexplorer_inner_wrap_focused">

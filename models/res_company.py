@@ -22,31 +22,34 @@ class ResCompany(models.Model):
                                      password="True")
     nextcloud_folder_mapping_ids = fields.One2many('nextcloud.folder.mapping', 'company_id',
                                                    'NextCloud Folder Mapping')
-    nextcloud_last_sync = fields.Datetime()
+    nextcloud_last_sync = fields.Integer()
 
     def get_nextcloud_information(self, res_model=False, res_id=False, skip_check=False):
         self.ensure_one()
         nextcloud_folder = self.nextcloud_folder_id
+        nextcloud_username = self.nextcloud_username
         if not nextcloud_folder:
-            nextcloud_folder = self.env['nextcloud.folder'].search([('name', '=', '/')], limit=1)
+            nextcloud_folder = self.env['nextcloud.folder'].search([
+                ('name', '=', '/'), ('username', '=', nextcloud_username)], limit=1)
             if not nextcloud_folder and not skip_check:
                 raise UserError(_('Please synchronize Nextcloud folder!'))
         values = {
             'nextcloud_url': self.nextcloud_url,
             'nextcloud_folder': nextcloud_folder.name if nextcloud_folder else '',
             'nextcloud_folder_id': nextcloud_folder,
-            'nextcloud_username': self.nextcloud_username,
+            'nextcloud_username': nextcloud_username,
             'nextcloud_password': self.nextcloud_password
         }
         if res_model:
             folder_mapping = self.nextcloud_folder_mapping_ids.filtered(
-                lambda x: x.model_name == res_model)
+                lambda x: x.model_name == res_model and x.username == nextcloud_username)
             if not folder_mapping:
                 folder_mapping = self.env['nextcloud.folder.mapping'].create({
                     'name': res_model,
                     'model_name': res_model,
                     'nextcloud_folder_id': nextcloud_folder.id,
-                    'company_id': self.id
+                    'company_id': self.id,
+                    'username': nextcloud_username
                 })
             values.update({'folder_mapping': folder_mapping})
             if res_id:
@@ -74,6 +77,7 @@ class ResCompany(models.Model):
         if status_code == 200:
             message = _("Connection Test Successful!")
             type_toast = 'success'
+            self.sync_nextcloud_folder()
         else:
             message = _("Connection Test Unsuccessful!")
             type_toast = 'danger'
@@ -126,7 +130,8 @@ class ResCompany(models.Model):
             # Handle etag to identify NextCloud folder existed or not
             etag = response.find('.//oc:fileid', namespaces={'oc': 'http://owncloud.org/ns'}).text
             nextcloud_filepath = href.replace(extra_path, '')
-            odoo_nc_record = NCFolder.search([('etag', '=', etag)], limit=1)
+            odoo_nc_record = NCFolder.search([('etag', '=', etag),
+                                              ('username', '=', username)], limit=1)
             if response.find('{DAV:}propstat/{DAV:}prop/{DAV:}resourcetype/{DAV:}collection') is not None:
                 nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1] 
                 if odoo_nc_record:
@@ -138,7 +143,8 @@ class ResCompany(models.Model):
                     NCFolder.with_context(sync_nextcloud=True).create({
                         'name': nextcloud_folder,
                         'etag': etag,
-                        'folder': True
+                        'folder': True,
+                        'username': username
                     })
                 if nextcloud_folder != folder_path:
                     self.send_request_get_folder(request_url, nextcloud_folder, username, password)
@@ -153,5 +159,6 @@ class ResCompany(models.Model):
                     NCFolder.with_context(sync_nextcloud=True).create({
                         'name': nextcloud_filepath,
                         'etag': etag,
+                        'username': username,
                         'file_type': contenttype.split('/')[-1]
                     })
