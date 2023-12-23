@@ -120,7 +120,10 @@ class ResCompany(models.Model):
     <oc:fileid/>
 </d:prop>
 </d:propfind>'''
-        request_header = {'OCS-APIRequest': 'true'}
+        request_header = {
+            'OCS-APIRequest': 'true',
+            'Depth': '10000'
+        }
         get_folder_response = requests.request("PROPFIND", request_url + folder_path, headers=request_header,
                                                data=payload, auth=(username, password))
         xml_data = get_folder_response.content.decode("utf-8")
@@ -146,8 +149,9 @@ class ResCompany(models.Model):
                         'folder': True,
                         'username': username
                     })
-                if nextcloud_folder != folder_path:
-                    self.send_request_get_folder(request_url, nextcloud_folder, username, password)
+                # NOTE: no need to run recursive based on depth params
+                # if nextcloud_folder != folder_path:
+                #     self.send_request_get_folder(request_url, nextcloud_folder, username, password)
             else:
                 contenttype = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}getcontenttype').text or ''
                 if odoo_nc_record:
