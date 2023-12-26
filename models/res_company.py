@@ -18,8 +18,7 @@ class ResCompany(models.Model):
     nextcloud_folder = fields.Char(string="Nextcloud Default Folder Name",
                                    related="nextcloud_folder_id.name", groups="base.group_system")
     nextcloud_username = fields.Char(string="Nextcloud Username", groups="base.group_system")
-    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system",
-                                     password="True")
+    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system")
     nextcloud_folder_mapping_ids = fields.One2many('nextcloud.folder.mapping', 'company_id',
                                                    'NextCloud Folder Mapping')
     nextcloud_last_sync = fields.Integer()
@@ -136,7 +135,7 @@ class ResCompany(models.Model):
             odoo_nc_record = NCFolder.search([('etag', '=', etag),
                                               ('username', '=', username)], limit=1)
             if response.find('{DAV:}propstat/{DAV:}prop/{DAV:}resourcetype/{DAV:}collection') is not None:
-                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1] 
+                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1]
                 if odoo_nc_record:
                     odoo_nc_record.with_context(sync_nextcloud=True).write({
                         'name': nextcloud_folder,
