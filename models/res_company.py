@@ -18,8 +18,7 @@ class ResCompany(models.Model):
     nextcloud_folder = fields.Char(string="Nextcloud Default Folder Name",
                                    related="nextcloud_folder_id.name", groups="base.group_system")
     nextcloud_username = fields.Char(string="Nextcloud Username", groups="base.group_system")
-    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system",
-                                     password="True")
+    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system")
     nextcloud_folder_mapping_ids = fields.One2many('nextcloud.folder.mapping', 'company_id',
                                                    'NextCloud Folder Mapping')
     nextcloud_last_sync = fields.Integer()
@@ -120,7 +119,10 @@ class ResCompany(models.Model):
     <oc:fileid/>
 </d:prop>
 </d:propfind>'''
-        request_header = {'OCS-APIRequest': 'true'}
+        request_header = {
+            'OCS-APIRequest': 'true',
+            'Depth': '10000'
+        }
         get_folder_response = requests.request("PROPFIND", request_url + folder_path, headers=request_header,
                                                data=payload, auth=(username, password))
         xml_data = get_folder_response.content.decode("utf-8")
@@ -133,7 +135,7 @@ class ResCompany(models.Model):
             odoo_nc_record = NCFolder.search([('etag', '=', etag),
                                               ('username', '=', username)], limit=1)
             if response.find('{DAV:}propstat/{DAV:}prop/{DAV:}resourcetype/{DAV:}collection') is not None:
-                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1] 
+                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1]
                 if odoo_nc_record:
                     odoo_nc_record.with_context(sync_nextcloud=True).write({
                         'name': nextcloud_folder,
@@ -146,8 +148,9 @@ class ResCompany(models.Model):
                         'folder': True,
                         'username': username
                     })
-                if nextcloud_folder != folder_path:
-                    self.send_request_get_folder(request_url, nextcloud_folder, username, password)
+                # NOTE: no need to run recursive based on depth params
+                # if nextcloud_folder != folder_path:
+                #     self.send_request_get_folder(request_url, nextcloud_folder, username, password)
             else:
                 contenttype = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}getcontenttype').text or ''
                 if odoo_nc_record:

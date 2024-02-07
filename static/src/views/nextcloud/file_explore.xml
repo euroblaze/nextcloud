@@ -2,6 +2,17 @@
 <templates xml:space="preserve">
     <t t-name="nextcloud.FileExplore" owl="1">
         <div id="nextcloud_fileexplore" style="height: 380px">
+            <t t-if="isDropZoneVisible.value">
+                <div class="o_DropZone o_AttachmentBox_dropZone" t-att-class="{ 'o-dragging-inside': state.isDraggingInside }"
+                    t-on-dragenter="_onDragenter" t-on-dragleave="_onDragleave" t-on-dragover="_onDragover" t-on-drop="_onDrop">
+                    <input type="file" id="fileInput" style="display: none;"
+                        t-on-o-dropzone-files-dropped="_onDropZoneFilesNextCloudDropped"
+                        multiple="" directory="" webkitdirectory="True" mozdirectory="" msdirectory="" odirectory=""/>
+                    <h4>
+                        Drag Files Here <i class="fa fa-download"/>
+                    </h4>
+                </div>
+            </t>
             <div class="fe_fileexplorer_wrap">
                 <div class="fe_fileexplorer_dropzone_wrap">
                     <div class="fe_fileexplorer_inner_wrap fe_fileexplorer_inner_wrap_focused">
@@ -53,6 +64,7 @@
                                     <div class="fe_fileexplorer_items_wrap fe_fileexplorer_items_focus">
                                         <t t-foreach="model.current_folder_data" t-as="record" t-key="record.id">
                                             <div class="fe_fileexplorer_item_wrap" t-on-click="model.onItemClicked"
+                                                t-att-title="record.folder_name"
                                                 t-attf-id="{{record.folder and 'folder' or 'file'}}_{{record.id}}">
                                                 <div class="fe_fileexplorer_item_wrap_inner" tabindex="0">
                                                     <div t-if="record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_folder">
@@ -84,10 +96,10 @@
                         <div class="fe_fileexplorer_statusbar_wrap">
                             <div class="fe_fileexplorer_statusbar_text_wrap">
                                 <div class="fe_fileexplorer_statusbar_text_segment_wrap">
-      5 items
+                                    <span id="total_files"><t t-esc="model.current_folder_data.length"/> items</span>
                                 </div>
                                 <div class="fe_fileexplorer_statusbar_text_segment_wrap">
-      1 item selected
+                                    <span id="total_selected_files"><t t-esc="model.files_selected.length"/> item selected</span>
                                 </div>
                             </div>
                             <div class="fe_fileexplorer_action_wrap">

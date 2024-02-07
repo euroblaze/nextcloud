@@ -114,7 +114,7 @@
 .fe_fileexplorer_wrap .fe_fileexplorer_item_icon { width: 48px; height: 48px; margin-left: auto; margin-right: auto; background-repeat: no-repeat; position: relative; }
 .fe_fileexplorer_wrap .fe_fileexplorer_item_icon_img { width: auto; }
 .fe_fileexplorer_wrap .fe_fileexplorer_item_icon img { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); max-width: 100%; max-height: calc(100% - 2px); -webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.15); }
-.fe_fileexplorer_wrap .fe_fileexplorer_item_text { margin-top: 0.1em; font-size: 0.75em; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; word-wrap: break-word; overflow: hidden; }
+.fe_fileexplorer_wrap .fe_fileexplorer_item_text { margin-top: 0.1em; font-size: 0.75em; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-wrap: break-word; overflow: hidden; }
 .fe_fileexplorer_wrap .fe_fileexplorer_item_text.fe_fileexplorer_invisible { color: transparent; }
 
 .fe_fileexplorer_wrap .fe_fileexplorer_item_icon_folder { background-image: url('fileexplorer_sprites.png'); background-position: -48px -48px; image-rendering: pixelated; }
@@ -240,4 +240,26 @@
 	.fe_fileexplorer_wrap .fe_fileexplorer_item_wrap_inner:hover { background-color: transparent; border-color: transparent; }
 	.fe_fileexplorer_wrap .fe_fileexplorer_inner_wrap:not(.fe_fileexplorer_inner_wrap_focused) .fe_fileexplorer_item_selected .fe_fileexplorer_item_wrap_inner:hover { background-color: transparent; border-color: transparent; }
 	.fe_fileexplorer_wrap .fe_fileexplorer_inner_wrap.fe_fileexplorer_inner_wrap_focused .fe_fileexplorer_items_wrap:not(.fe_fileexplorer_items_focus) .fe_fileexplorer_item_wrap_inner:hover { background-color: transparent; border-color: transparent; }
+}
+
+.o_DropZone.o-dragging-inside {
+    border-width: 5px;
+}
+.o_DropZone {
+    color: #017e84;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px dashed #017e84;
+}
+.o_DropZone {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    align-items: center;
+    justify-content: center;
 }
