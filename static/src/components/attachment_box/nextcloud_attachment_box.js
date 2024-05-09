@@ -23,5 +23,5 @@ patch(AttachmentBox.prototype, "nextcloud.upload_patch", {
         ev.stopPropagation();
         await this._FileUploaderNextcloudRef.comp.uploadFiles(ev.detail.files);
         this.isDropZoneNextCloudVisible.value = false;
-    }
+    },
 });
