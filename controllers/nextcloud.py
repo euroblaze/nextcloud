@@ -108,7 +108,10 @@ class BinaryNextCloud(http.Controller):
         attachment = request.env['ir.attachment'].browse(int(attachment_id))
         if not attachment:
             attachmentData = {'error': _("Missing attachment ID.")}
-        attachmentData = attachment.request_upload_file_nextcloud(folder_id)
+        if not attachment.x_is_folder:
+            attachmentData = attachment.request_upload_file_nextcloud(folder_id)
+        else:
+            attachmentData = attachment.send_request_create_folder_nextcloud(folder_id)
         # COMMENT: use it when share file to public
         # params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
         # post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'

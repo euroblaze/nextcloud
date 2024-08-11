@@ -67,18 +67,5 @@ registerInstancePatchModel('mail.chatter', 'nextcloud/static/src/js/chatter.js',
                 origin_resid: this.threadId,
                 domain: [],
         }).open();
-        // const dialogProps = {
-        //     title: this.env._t("Download file from Nextcloud"),
-        //     confirm: () => {},
-        //     cancel: () => {},
-        //     data: {
-        //         attachment_id: false,
-        //         fileexplore_mode: 'download',
-        //         origin_resmodel: this.threadModel,
-        //         origin_resid: this.threadId,
-        //         domain: [],
-        //     }
-        // };
-        // this.dialogService.add(FileExploreDialog, dialogProps);
     }
 })

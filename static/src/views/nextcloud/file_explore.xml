@@ -25,17 +25,29 @@
                             </div>
                             <div class="fe_fileexplorer_path_wrap">
                                 <div class="fe_fileexplorer_path_icon">
-                                    <div class="fe_fileexplorer_path_icon_inner"></div>
+                                    <div class="fe_fileexplorer_path_icon_inner"/>
                                 </div>
                                 <div class="fe_fileexplorer_path_segments_scroll_wrap">
                                     <div class="fe_fileexplorer_path_segments_wrap">
                                         <t t-foreach="model.breadcrumbs" t-as="breadcrumb" t-key="breadcrumb.id">
-                                            <div class="fe_fileexplorer_path_segment_wrap">
-                                                <button class="fe_fileexplorer_path_name" t-on-click="model.openFolder(breadcrumb.id)">
-                                                    <t t-esc="breadcrumb.folder_name"/>
-                                                </button>
-                                                <button class="fe_fileexplorer_path_opts" t-on-click="model.openFolder(breadcrumb.id)"></button>
-                                            </div>
+                                            <t t-if="model.fileexplore_mode == 'open_folder'">
+                                                <div class="fe_fileexplorer_path_segment_wrap">
+                                                    <button class="fe_fileexplorer_path_name" t-on-click="model.openFolder(breadcrumb.id)">
+                                                        <t t-esc="breadcrumb.x_name"/>
+                                                    </button>
+                                                    <button class="fe_fileexplorer_path_opts"
+                                                            t-on-click="model.openFolder(breadcrumb.id)"/>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="fe_fileexplorer_path_segment_wrap">
+                                                    <button class="fe_fileexplorer_path_name" t-on-click="model.openFolder(breadcrumb.id)">
+                                                        <t t-esc="breadcrumb.folder_name"/>
+                                                    </button>
+                                                    <button class="fe_fileexplorer_path_opts"
+                                                            t-on-click="model.openFolder(breadcrumb.id)"/>
+                                                </div>
+                                            </t>
                                         </t>
                                     </div>
                                 </div>
@@ -46,13 +58,18 @@
                                 <div class="fe_fileexplorer_folder_tools">
                                     <!-- <button class="fe_fileexplorer_folder_tool_new_folder" title="New folder" tabindex="0"></button> -->
                                     <!-- <button class="fe_fileexplorer_folder_tool_new_file" title="New file" tabindex="-1"></button> -->
-                                    <button class="fe_fileexplorer_folder_tool_upload" t-on-click="model.onUploadClicked"
-                                    t-if="model.fileexplore_mode == 'upload'"
-                                    title="Upload" t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}" tabindex="-1"></button>
-                                    <button class="fe_fileexplorer_folder_tool_download" t-on-click="model.onDownloadClicked"
-                                    t-if="model.fileexplore_mode == 'download'"
-                                    t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}" title="Download" tabindex="-1"></button>
-                                    <div class="fe_fileexplorer_folder_tool_separator"></div>
+                                    <button class="fe_fileexplorer_folder_tool_upload"
+                                            t-on-click="model.onUploadClicked"
+                                            t-if="model.fileexplore_mode == 'upload'"
+                                            title="Upload"
+                                            t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}"
+                                            tabindex="-1"/>
+                                    <button class="fe_fileexplorer_folder_tool_download"
+                                            t-on-click="model.onDownloadClicked"
+                                            t-if="model.fileexplore_mode == 'download'"
+                                            t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}"
+                                            title="Download" tabindex="-1"/>
+                                    <div class="fe_fileexplorer_folder_tool_separator"/>
                                     <!-- <button class="fe_fileexplorer_folder_tool_copy fe_fileexplorer_disabled" title="Copy" tabindex="-1"></button>
                                     <button class="fe_fileexplorer_folder_tool_paste" title="Paste" tabindex="-1"></button>
                                     <button class="fe_fileexplorer_folder_tool_cut" title="Cut" tabindex="-1"></button>
@@ -62,33 +79,45 @@
                             <div class="fe_fileexplorer_items_scroll_wrap">
                                 <div class="fe_fileexplorer_items_scroll_wrap_inner">
                                     <div class="fe_fileexplorer_items_wrap fe_fileexplorer_items_focus">
-                                        <t t-foreach="model.current_folder_data" t-as="record" t-key="record.id">
-                                            <div class="fe_fileexplorer_item_wrap" t-on-click="model.onItemClicked"
-                                                t-att-title="record.folder_name"
-                                                t-attf-id="{{record.folder and 'folder' or 'file'}}_{{record.id}}">
-                                                <div class="fe_fileexplorer_item_wrap_inner" tabindex="0">
-                                                    <div t-if="record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_folder">
+                                        <t t-if="model.fileexplore_mode == 'open_folder'">
+                                            <t t-foreach="model.current_folder_data" t-as="record" t-key="record.id">
+                                                <div class="fe_fileexplorer_item_wrap" t-on-click="model.onItemClicked"
+                                                    t-att-title="record.x_name"
+                                                    t-attf-id="{{record.x_is_folder and 'folder' or 'file'}}_{{record.id}}">
+                                                    <div class="fe_fileexplorer_item_wrap_inner" tabindex="0">
+                                                        <t t-if="record.x_is_folder">
+                                                            <div t-if="record.x_is_folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_folder"/>
+                                                            <div class="fe_fileexplorer_item_text">
+                                                                <t t-esc="record.x_name"/>
+                                                            </div>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <div t-if="!record.x_is_folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file
+                                                                fe_fileexplorer_item_icon_ext_t" t-att-data-ext="record.mimetype or 'TXT'"/>
+                                                            <div class="fe_fileexplorer_item_text">
+                                                                <t t-esc="record.name"/>
+                                                            </div>
+                                                        </t>
                                                     </div>
-                                                    <div t-if="!record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file
-                                                    fe_fileexplorer_item_icon_ext_t" t-att-data-ext="record.file_type or 'TXT'"></div>
-                                                    <div class="fe_fileexplorer_item_text"><t t-esc="record.folder_name"/></div>
                                                 </div>
-                                            </div>
+                                            </t>
                                         </t>
-                                        
-                                        <!-- <div class="fe_fileexplorer_item_wrap fe_fileexplorer_item_selected">
-                                            <div class="fe_fileexplorer_item_wrap_inner" tabindex="-1">
-                                                <div class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file fe_fileexplorer_item_icon_ext_m" data-ext="MP3"></div>
-                                                <div class="fe_fileexplorer_item_text">Amp3_file.mp3</div>
-                                            </div>
-                                        </div>
-                                        <div class="fe_fileexplorer_item_wrap">
-                                            <div class="fe_fileexplorer_item_wrap_inner" tabindex="-1">
-                                                <div class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file fe_fileexplorer_item_icon_ext_j" data-ext="jpg"></div>
-                                                <div class="fe_fileexplorer_item_text">test.jpg</div>
-                                            </div>
-                                        </div> -->
-
+                                        <t t-else="">
+                                             <t t-foreach="model.current_folder_data" t-as="record" t-key="record.id">
+                                                <div class="fe_fileexplorer_item_wrap" t-on-click="model.onItemClicked"
+                                                    t-att-title="record.folder_name"
+                                                    t-attf-id="{{record.folder and 'folder' or 'file'}}_{{record.id}}">
+                                                    <div class="fe_fileexplorer_item_wrap_inner" tabindex="0">
+                                                        <div t-if="record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_folder">
+                                                        </div>
+                                                        <div t-if="!record.folder" class="fe_fileexplorer_item_icon fe_fileexplorer_item_icon_file
+                                                        fe_fileexplorer_item_icon_ext_t"
+                                                             t-att-data-ext="record.file_type or 'TXT'"/>
+                                                        <div class="fe_fileexplorer_item_text"><t t-esc="record.folder_name"/></div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </t>
                                     </div>
                                 </div>
                             </div>
@@ -106,7 +135,7 @@
                                 <div class="fe_fileexplorer_action_upload_wrap">
                                     <div class="fe_fileexplorer_action_upload_msg_wrap"> </div>
                                     <div class="fe_fileexplorer_action_upload_msg_wrap fe_fileexplorer_action_upload_msg_wrap_last">----</div>
-                                    <div class="fe_fileexplorer_action_upload_cancel_wrap"></div>
+                                    <div class="fe_fileexplorer_action_upload_cancel_wrap"/>
                                 </div>
                             </div>
                         </div>

@@ -14,7 +14,7 @@ class NextCloudFolder(models.Model):
     name = fields.Char(string='Full Path', required=True)
     folder_name = fields.Char(string='Folder/File Name',
                               compute='_compute_parent_id', store=True)
-    etag = fields.Char(string='ETag', required=True)
+    etag = fields.Char(string='ETag', required=False)
     company_id = fields.Many2one('res.company', required=True,
                                  default=lambda self: self.env.company)
     parent_id = fields.Many2one('nextcloud.folder', 'Parent Folder',
@@ -39,48 +39,29 @@ class NextCloudFolder(models.Model):
                 if len(split_arr) > 1:
                     parent = self.search([
                         ('name', '=', '/'.join(split_arr[:-1])),
-                        ('username', '=', username)])
+                        ('username', '=', username)], limit=1)
                     if parent:
                         parent_id = parent.id
                     folder_name = split_arr[-1]
                 else:
                     folder_name = rec.name
                     parent_id = self.search([('name', '=', '/'),
-                                             ('username', '=', username)]).id
+                                             ('username', '=', username)],limit=1).id
             rec.parent_id = parent_id
             rec.folder_name = folder_name
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        files = super(NextCloudFolder, self).create(vals_list)
-        if not self._context.get('sync_nextcloud', False):
-            files.send_request_create_folder_nextcloud()
-        return files
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     files = super(NextCloudFolder, self).create(vals_list)
+    #     if not self._context.get('sync_nextcloud', False):
+    #         files.send_request_create_folder_nextcloud()
+    #     return files
 
-    def write(self, vals):
-        result = super(NextCloudFolder, self).write(vals)
-        if 'name' in vals and not self._context.get('sync_nextcloud', False):
-            self.send_request_create_folder_nextcloud()
-        return result
-
-    def send_request_create_folder_nextcloud(self):
-        for folder in self:
-            if not folder.folder:
-                continue
-            try:
-                nextcloud_params = folder.company_id.get_nextcloud_information()
-                url = nextcloud_params.get('nextcloud_url')
-                username = nextcloud_params.get('nextcloud_username')
-                password = nextcloud_params.get('nextcloud_password')
-                head = {'OCS-APIRequest': 'true'}
-                mkcol_url = url + f'/remote.php/dav/files/{username}/{folder.name}'
-                response = requests.request('MKCOL', mkcol_url, headers=head, auth=(username, password))
-                if response.status_code == 201:
-                    _logger.info('Create folder on NextCloud success!')
-                else:
-                    _logger.error('Create folder on NextCloud failed! Err: %s' % response.text)
-            except Exception as err:
-                _logger.error('Create folder on NextCloud failed! Err: %s' % err)
+    # def write(self, vals):
+    #     result = super(NextCloudFolder, self).write(vals)
+    #     if 'name' in vals and not self._context.get('sync_nextcloud', False):
+    #         self.send_request_create_folder_nextcloud()
+    #     return result
 
     @api.model
     def get_master_data(self, domain, **kwargs):

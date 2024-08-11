@@ -25,3 +25,20 @@ patch(AttachmentBox.prototype, "nextcloud.upload_patch", {
         this.isDropZoneNextCloudVisible.value = false;
     }
 });
+
+patch(AttachmentBox.prototype,'document_folder.AttachmentBox',{
+    _onClickAdd(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        this._fileUploaderRef.el.childNodes[0].removeAttribute('webkitdirectory')
+        this._fileUploaderRef.el.childNodes[0].removeAttribute('directory')
+        this._fileUploaderRef.comp.openBrowserFileUploader();
+    },
+    _onClickAddFolder(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this._fileUploaderRef.el.childNodes[0].setAttribute('webkitdirectory',true)
+        this._fileUploaderRef.el.childNodes[0].setAttribute('directory',true)
+        this._fileUploaderRef.comp.openBrowserFileUploader();
+    }
+})
