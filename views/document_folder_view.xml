@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_document_folder_form" model="ir.ui.view">
+        <field name="name">view.document.folder.form</field>
+        <field name="model">document.folder</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="x_name" placeholder="Folder Name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="x_linked_attachment" string="More Details"/>
+                            <field name="x_parent_folder_id"/>
+                        </group>
+                        <group>
+                            <field name="x_count_total_child"/>
+                            <field name="x_sequence_folder"/>
+                            <field name="x_document_folder_path"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Child Folders">
+                            <field name="x_child_folder_ids" widget="one2many">
+                                <kanban>
+                                    <field name="x_name"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div class="oe_kanban_global_click o_kanban_record" style="text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; transition: box-shadow 0.3s ease; max-width: 200px; margin: auto;">
+                                                <!-- Folder Image -->
+                                                <div class="kanban_image" style="margin-bottom: 10px;">
+                                                    <img src="/nextcloud/static/img/mimetypes/folder.png" alt="Folder" style="max-width: 48px;"/>
+                                                </div>
+
+                                                <!-- Folder Name -->
+                                                <div class="o_kanban_title" style="font-size: 14px; font-weight: bold; color: #333; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+                                                    <field name="x_name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </page>
+                        <page string="Child Files">
+                            <field name="x_child_file_ids" widget="one2many">
+                                <kanban edit="false" import="false">
+                                <field name="id"/>
+                                <field name="mimetype"/>
+                                <field name="type"/>
+                                <field name="create_uid"/>
+                                <field name="url"/>
+                                <field name="create_date"/>
+                                <field name="name"/>
+                                <templates>
+                                    <t t-name="kanban-box">
+                                        <div class="oe_kanban_global_area oe_kanban_global_click o_kanban_attachment">
+                                            <div class="row">
+                                                <div class="offset-10">
+                                                    <div class="o_dropdown_kanban dropdown" groups="base.group_user">
+                                                        <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                                            <span class="fa fa-ellipsis-v"/>
+                                                        </a>
+                                                        <div class="dropdown-menu" role="menu">
+                                                            <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="o_kanban_image">
+                                                <div class="o_kanban_image_wrapper">
+                                                    <t t-set="webimage" t-value="new RegExp('image.*(gif|jpeg|jpg|png)').test(record.mimetype.value)"/>
+                                                    <div t-if="record.type.raw_value == 'url'" class="o_url_image fa fa-link fa-3x text-muted" aria-label="Image is a link"/>
+                                                    <img t-elif="webimage" t-attf-src="/web/image/#{record.id.raw_value}" width="100" height="100" alt="Document" class="o_attachment_image"/>
+                                                    <div t-else="!webimage" class="o_image o_image_thumbnail" t-att-data-mimetype="record.mimetype.value"/>
+                                                </div>
+                                            </div>
+                                            <div class="o_kanban_details">
+                                                <div class="o_kanban_details_wrapper">
+                                                    <div t-att-title="record.name.raw_value" class="o_kanban_record_title">
+                                                        <field name="name" class="o_text_overflow"/>
+                                                    </div>
+                                                    <div class="o_kanban_record_body">
+                                                        <t t-if="record.type.raw_value == 'url'">
+                                                            <span class="o_document_url"><i class="fa fa-globe" aria-label="Document url"/> <field name="url" widget="url"/></span>
+                                                        </t>
+                                                        <samp t-else="" class="text-muted"> </samp>
+                                                    </div>
+                                                    <div class="o_kanban_record_bottom">
+                                                        <time class="oe_kanban_bottom_left">
+                                                            <field name="create_date" widget="date"/>
+                                                        </time>
+                                                        <div class="oe_kanban_bottom_right">
+                                                            <field name="create_uid" widget="many2one_avatar_user"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </templates>
+                            </kanban>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_document_folder_tree" model="ir.ui.view">
+        <field name="name">view.document.folder.tree</field>
+        <field name="model">document.folder</field>
+        <field name="arch" type="xml">
+            <tree string="Document Folder">
+                <field name="x_name"/>
+                <field name="x_parent_folder_id"/>
+                <field name="x_count_total_child"/>
+            </tree>
+        </field>
+    </record>
+    <record id="document_folder_action" model="ir.actions.act_window">
+        <field name="name">Document Folder</field>
+        <field name="res_model">document.folder</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('x_parent_folder_id','=',False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your folder here !
+            </p>
+        </field>
+    </record>
+    <menuitem id="menu_document_folder" name="Document Folder" parent="base.next_id_9"
+            sequence="100" action="document_folder_action"/>
+</odoo>
