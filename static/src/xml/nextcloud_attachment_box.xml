@@ -49,101 +49,45 @@
         </div>
     </t>
 
-    <t t-inherit="mail.AttachmentBox" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[hasclass('o_AttachmentBox')]" position="replace">
-            <div class="o_AttachmentBox">
-                <div class="AttachmentBoxNative" t-if="chatter">
-                    <div class="o_AttachmentBox_title">
-                        <hr class="o_AttachmentBox_dashedLine"/>
-                        <span class="o_AttachmentBox_titleText">
-                            Attachments
-                        </span>
-                        <hr class="o_AttachmentBox_dashedLine"/>
-                    </div>
-                    <div class="o_AttachmentBox_content">
-                        <t t-if="isDropZoneVisible.value">
-                            <DropZone
-                                class="o_AttachmentBox_dropZone"
-                                t-on-o-dropzone-files-dropped="_onDropZoneFilesDropped"
-                                t-ref="dropzone"
-                            />
-                        </t>
-                        <t t-if="chatter.attachmentList">
-                            <AttachmentList
-                                class="o_attachmentBox_attachmentList"
-                                attachmentListLocalId="chatter.attachmentList.localId"
-                                t-on-o-attachment-removed="_onAttachmentRemoved"
-                            />
-                        </t>
-                        <button class="o_AttachmentBox_buttonAdd btn btn-link" type="button" t-on-click="_onClickAdd">
-                            <i class="fa fa-plus-square"/>
-                            Add attachments
-                        </button>
-                    </div>
-                    <FileUploader
-                        threadLocalId="chatter.thread.localId"
-                        t-on-o-attachment-created="_onAttachmentCreated"
-                        t-ref="fileUploader"
-                    />
-                </div>
-                <!-- Hidden Attachment Box Nextcloud -->
-                <!-- <div class="AttachmentBoxNextCloud" t-if="chatter">
-                    <div class="o_AttachmentBox_title">
-                        <hr class="o_AttachmentBox_dashedLine"/>
-                        <span class="o_AttachmentBox_titleText">
-                            Nextcloud Attachments
-                        </span>
-                        <hr class="o_AttachmentBox_dashedLine"/>
-                    </div>
-                    <div class="o_AttachmentBox_content">
-                        <t t-if="isDropZoneVisible.value">
-                            <DropZone
-                                class="o_AttachmentBox_dropZone"
-                                t-on-o-dropzone-files-dropped="_onDropZoneFilesNextCloudDropped"
-                                t-ref="dropzone"
-                            />
-                        </t>
-                        <t t-if="chatter.attachmentList">
-                            <NextCloudAttachmentList
-                                    class="o_attachmentBox_attachmentList"
-                                    attachmentListLocalId="chatter.attachmentList.localId"
-                                    t-on-o-attachment-removed="_onAttachmentRemoved"
-                            />
-                        </t>
-                        <button class="o_AttachmentBox_buttonAdd btn btn-link nextcloud-upload" type="button" id="next-cloud-upload"
-                                t-on-click="_onClickAddNextcloud">
-                                    <i class="fa fa-cloud-upload"/>
-                            Nextcloud Upload
-                        </button>
-                    </div>
-                    <FileUploaderNextcloud
-                            threadLocalId="chatter.thread.localId"
-                            t-on-o-attachment-created="_onAttachmentCreated"
-                            t-ref="fileUploaderNextcloud"
-                    />
-                </div> -->
-            </div>
-        </xpath>
-    </t>
-
-    <!-- <t t-inherit="mail.AttachmentImage" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[hasclass('o_AttachmentImage')]" position="attributes">
-            <attribute name="t-att-class">{
-                'hide-not-nextcloud': attachmentImage.attachment.nextcloud_attachment,
-                'o-isUploading': attachmentImage.attachment.isUploading
-            }</attribute>
-        </xpath>
-    </t>
-
-    <t t-inherit="mail.AttachmentCard" t-inherit-mode="extension" owl="1">
-        <xpath expr="//div[hasclass('o_AttachmentCard')]" position="attributes">
-            <attribute name="t-att-class">{
-                'hide-not-nextcloud': attachmentCard.attachment.nextcloud_attachment,
-                'o-downloadable': !attachmentCard.attachmentList.composerView,
-                'o-isUploading': attachmentCard.attachment.isUploading,
-                'o-viewable': attachmentCard.attachment.isViewable,
-            }</attribute>
-        </xpath>
-    </t> -->
+<!--    <t t-inherit="mail.AttachmentBox" t-inherit-mode="extension" owl="1">-->
+<!--        <xpath expr="//div[hasclass('o_AttachmentBox')]" position="replace">-->
+<!--            <div class="o_AttachmentBox">-->
+<!--                <div class="AttachmentBoxNative" t-if="chatter">-->
+<!--                    <div class="o_AttachmentBox_title">-->
+<!--                        <hr class="o_AttachmentBox_dashedLine"/>-->
+<!--                        <span class="o_AttachmentBox_titleText">-->
+<!--                            Attachments-->
+<!--                        </span>-->
+<!--                        <hr class="o_AttachmentBox_dashedLine"/>-->
+<!--                    </div>-->
+<!--                    <div class="o_AttachmentBox_content">-->
+<!--                        <t t-if="isDropZoneVisible.value">-->
+<!--                            <DropZone-->
+<!--                                class="o_AttachmentBox_dropZone"-->
+<!--                                t-on-o-dropzone-files-dropped="_onDropZoneFilesDropped"-->
+<!--                                t-ref="dropzone"-->
+<!--                            />-->
+<!--                        </t>-->
+<!--                        <t t-if="chatter.attachmentList">-->
+<!--                            <AttachmentList-->
+<!--                                class="o_attachmentBox_attachmentList"-->
+<!--                                attachmentListLocalId="chatter.attachmentList.localId"-->
+<!--                                t-on-o-attachment-removed="_onAttachmentRemoved"-->
+<!--                            />-->
+<!--                        </t>-->
+<!--                        <button class="o_AttachmentBox_buttonAdd btn btn-link" type="button" t-on-click="_onClickAdd">-->
+<!--                            <i class="fa fa-plus-square"/>-->
+<!--                            Add attachments-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <FileUploader-->
+<!--                        threadLocalId="chatter.thread.localId"-->
+<!--                        t-on-o-attachment-created="_onAttachmentCreated"-->
+<!--                        t-ref="fileUploader"-->
+<!--                    />-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </xpath>-->
+<!--    </t>-->
 
 </templates>

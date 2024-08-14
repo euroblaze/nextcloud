@@ -1,0 +1,5 @@
+.o_image {
+    &[data-mimetype='document/folder'] {
+        background-image: url('/nextcloud/static/img/mimetypes/folder.png');
+    }
+}

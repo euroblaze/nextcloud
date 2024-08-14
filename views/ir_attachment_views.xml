@@ -4,6 +4,10 @@
         <field name="model">ir.attachment</field>
         <field name="inherit_id" ref="base.view_attachment_form"/>
         <field name="arch" type="xml">
+            <xpath expr='//field[@name="type"]' position="after">
+                <field name="x_document_folder_id" attrs="{'invisible': [('type', '=', 'folder')]}"/>
+                <field name="x_link_document_folder_id" attrs="{'invisible': [('type', '!=', 'folder')]}"/>
+            </xpath>
             <xpath expr='//field[@name="mimetype"]' position="after">
                 <field name="nextcloud_attachment" attrs="{'invisible': [('nextcloud_attachment', '=', False)]}"/>
                 <field name="nextcloud_view_link" widget="url"

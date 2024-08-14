@@ -173,7 +173,6 @@ class NextcloudFileExplore extends Component {
         await this._FileUploaderNextcloudRef.comp.uploadFiles(ev.detail.files);
         this.isDropZoneNextCloudVisible.value = false;
     }
-
 }
 
 NextcloudFileExplore.type = "file_explore_view";

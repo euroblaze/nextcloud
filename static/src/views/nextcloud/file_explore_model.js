@@ -68,14 +68,26 @@ export class FileExploreModel extends Model {
     }
 
     async load(params) {
-        const data = await this.orm.call('nextcloud.folder', 'get_master_data', [params.domain], {
-            res_model: this.origin_resmodel,
-            res_id: this.origin_resid
-        });
+        var data = []
+        if (this.fileexplore_mode != 'open_folder'){
+            data = await this.orm.call('nextcloud.folder', 'get_master_data', [params.domain], {
+                res_model: this.origin_resmodel,
+                res_id: this.origin_resid
+            });
+        } else {
+            data = await this.orm.call('document.folder', 'get_folder_hierarchy', [params.domain], {
+                res_model: this.origin_resmodel,
+                res_id: this.origin_resid,
+                doc_folder_id: this.attachment_id
+            });
+        }
         this.data = data.data;
         this.breadcrumbs = this.getBreadcums(this.data, data.default_folder.id);
         this.current_folder = data.default_folder;
-        this.current_folder_data = this.getDataByIds(this.data, this.current_folder.child_ids);
+        this.current_folder_data = this.getDataByIds(
+            this.data,
+            !this.current_folder.child_ids ? this.current_folder.x_child_folder_ids.concat(this.current_folder.x_child_file_ids) : this.current_folder.child_ids
+        );
         this.folder_selected = this.current_folder.id;
         this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' && this.folder_selected : false;
         this.notify();
@@ -144,8 +156,15 @@ export class FileExploreModel extends Model {
             const item = data.find((element) => element.id === id);
             if (item) {
               breadcrumbs.unshift(item);
-              if (item.parent_id !== null) {
+              if (item.parent_id) {
                 findParent(item.parent_id[0]);
+              } else {
+                if (item.x_document_folder_id) {
+                    findParent(item.x_document_folder_id[0]);
+                }
+                if (item.x_parent_folder_id) {
+                    findParent(item.x_parent_folder_id[0]);
+                }
               }
             }
         }
@@ -156,7 +175,10 @@ export class FileExploreModel extends Model {
     openFolder(folderID) {
         let currentFolder = this.getDataById(this.data, folderID);
         this.current_folder = currentFolder;
-        this.current_folder_data = this.getDataByIds(this.data, this.current_folder.child_ids);
+        this.current_folder_data = this.getDataByIds(
+            this.data,
+            !this.current_folder.child_ids ? this.current_folder.x_child_folder_ids.concat(this.current_folder.x_child_file_ids) : this.current_folder.child_ids
+        );
         this.breadcrumbs = this.getBreadcums(this.data, folderID);
         this.files_selected = [];
         this.feature.allowDownload = false;
@@ -192,7 +214,7 @@ export class FileExploreModel extends Model {
             if (response_data.error) {
                 self.env.services['notification'].notify({
                     type: 'danger',
-                    message: attachmentData.error,
+                    message: response_data.error,
                 });
                 return;
             }

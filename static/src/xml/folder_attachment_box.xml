@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.AttachmentBox" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button[hasclass('o_AttachmentBox_buttonAdd')]" position="after">
+            <button class="o_AttachmentBox_buttonAdd btn btn-link folder_upload" type="button" t-on-click="_onClickAddFolder">
+                <i class="fa fa-plus-square"/>
+                Add Folder
+            </button>
+        </xpath>
+    </t>
+</templates>

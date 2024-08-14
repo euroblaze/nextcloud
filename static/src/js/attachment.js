@@ -21,6 +21,9 @@ registerFieldPatchModel('mail.attachment', 'nextcloud/static/src/js/attachment.j
     isNextCloudUploading: attr({
         default: false,
     }),
+    isDocumentFolder: attr({
+        compute: '_computeDocumentFolder',
+    }),
 });
 
 registerClassPatchModel('mail.attachment', 'nextcloud/static/src/js/attachment.js', {
@@ -56,6 +59,18 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
         return clear();
     },
 
+    _computeDocumentFolder() {
+        return this.mimetype === 'document/folder';
+    },
+
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    _computeIsViewable() {
+        const res = this._super(...arguments);
+        return res || this.isDocumentFolder
+    },
     /**
  * @override
  */
