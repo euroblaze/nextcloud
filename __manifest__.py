@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "NextCloud Attachments",
-    'summary': """NextCloud Attachments""",
-    'description': """NextCloud Attachments""",
-    'author': "Simplify-ERP®",
-    'website': "https://simplify-erp.com/",
+    'name': "NextCloud based DMS for PowerOn",
+    'summary': """This module enables the decoupled (from Odoo) storage of file attachments on a separate NextCloud Server""",
+    'description': """You will need a working NextCloud server to actually perform file-storage functions.""",
+    'author': "Vy Vo, Ashant Chalasani, Quy Ho, Bojan Ancev",
+    'website': "https://poweron.software/dms",
     'category': 'Extra Tools',
     'version': '15.0.0.5',
     'license': 'LGPL-3',
