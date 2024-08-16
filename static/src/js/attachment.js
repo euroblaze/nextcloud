@@ -81,7 +81,7 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
     },
 
     /**
-     * Handles click on download icon.
+     * Handles click on upload icon.
      *
      * @param {MouseEvent} ev
      */
@@ -151,4 +151,40 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
             }
         }
     },
+
+    folderDownload(folder_zip_id) {
+        var downloadUrl = '#'
+        if (!this.accessToken && this.originThread && this.originThread.model === 'mail.channel') {
+            downloadUrl = `/mail/channel/${this.originThread.id}/attachment/${folder_zip_id}?download=true`;
+        } else {
+            const accessToken = this.accessToken ? `access_token=${this.accessToken}&` : '';
+            downloadUrl = `/web/content/ir.attachment/${folder_zip_id}/datas?${accessToken}download=true`;
+        }
+        const downloadLink = document.createElement('a');
+        downloadLink.setAttribute('href', downloadUrl);
+        // Adding 'download' attribute into a link prevents open a new tab or change the current location of the window.
+        // This avoids interrupting the activity in the page such as rtc call.
+        downloadLink.setAttribute('download','');
+        downloadLink.click();
+    },
+    /**
+     * Handles click on download icon.
+     *
+     * @param {MouseEvent} ev
+     */
+    async onClickDownload(ev) {
+        ev.stopPropagation();
+        if (!this.isDocumentFolder) {
+            this.download();
+        } else {
+            const response = await this.env.browser.fetch('/document/folder/download', {
+                method: 'POST',
+                body: this._createFormDataNextcloud()
+            });
+            const attachmentData = await response.json();
+            if (attachmentData.folder_download_id) {
+                this.folderDownload(attachmentData.folder_download_id)
+            }
+        }
+    }
 });

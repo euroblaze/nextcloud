@@ -3,6 +3,7 @@ from odoo import models, fields, api, _
 import logging
 import base64
 import io
+import zipfile
 from PIL import Image
 
 _logger = logging.getLogger(__name__)
@@ -70,8 +71,6 @@ class DocumentFolder(models.Model):
 
                 # Create the file in the final folder
                 self.create_file(parent_folder, ufile_v, file_name, parent_folder_id.id, res_id, res_model)
-
-            return True
         except Exception as e:
             _logger.error(f"Error generating folder hierarchy: {e}")
             return False
@@ -122,3 +121,31 @@ class DocumentFolder(models.Model):
         })
 
         return values
+
+    def document_folder_zip(self, attachment_id):
+        folder_attachment = self.env['ir.attachment'].browse(int(attachment_id))
+        if folder_attachment:
+            document_folder = folder_attachment.x_link_document_folder_id
+            output_zip_name = f'{document_folder.x_document_folder_path}.zip'
+            output = io.BytesIO()
+            folder_files = self.env['ir.attachment'].sudo().search(
+                [('x_original_folder_id', '=', document_folder.id)])
+            # Create a ZipFile in memory
+            with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for file in folder_files:
+                    # Get the file content and its name
+                    file_content = base64.b64decode(file.datas)
+                    path_parts = file.x_document_folder_path.split('/')
+                    file_name = '/'.join(path_parts[1:])
+                    # Write the file into the zip file
+                    zipf.writestr(file_name, file_content)
+
+            folder_vals = {
+                'name': folder_attachment.name,
+                'datas': base64.b64encode(output.getvalue()),
+            }
+
+            download_folder_attachment = self.env['ir.attachment'].sudo().create(folder_vals)
+            folder_attachment['x_download_folder_attachment_id'] = download_folder_attachment.id
+
+        return folder_attachment
