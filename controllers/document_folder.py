@@ -2,20 +2,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import json
-from collections import defaultdict
-from datetime import datetime, timedelta
-from psycopg2 import IntegrityError
-from psycopg2.errorcodes import UNIQUE_VIOLATION
-import io
-import base64
-import logging
 from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
-from odoo.tools import consteq, file_open
-from odoo.tools.misc import get_lang
 from odoo.tools.translate import _
-from werkzeug.exceptions import NotFound
 
 
 class DocumentFolderController(http.Controller):

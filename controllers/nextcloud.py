@@ -3,7 +3,6 @@ import logging
 import json
 import xml.etree.ElementTree as ET
 import requests
-import base64
 import werkzeug
 import werkzeug.exceptions
 import werkzeug.utils

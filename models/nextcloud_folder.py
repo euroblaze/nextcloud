@@ -3,8 +3,6 @@ import requests
 import logging
 import xml.etree.ElementTree as ET
 from urllib.parse import unquote
-import os
-import io
 
 from odoo import _, fields, models, api
 from odoo.exceptions import ValidationError, AccessError
