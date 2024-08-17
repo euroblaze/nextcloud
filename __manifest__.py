@@ -6,7 +6,7 @@
     'author': "Simplify-ERP®",
     'website': "https://simplify-erp.com/",
     'category': 'Extra Tools',
-    'version': '1.0',
+    'version': '15.0.0.2',
     'license': 'LGPL-3',
     'depends': ['base', 'account', 'mail'],
     'data': [
