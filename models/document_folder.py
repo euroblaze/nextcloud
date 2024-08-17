@@ -4,7 +4,6 @@ import logging
 import base64
 import io
 import zipfile
-from PIL import Image
 
 _logger = logging.getLogger(__name__)
 
