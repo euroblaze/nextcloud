@@ -68,7 +68,7 @@ class DocumentFolderController(http.Controller):
         zip_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
         zip_data = {}
         if zip_attachment_id.x_download_folder_attachment_id:
-            zip_data['folder_download_id'] = zip_attachment_id.x_download_folder_attachment_id.id
+            zip_data['folder_download_id'] = zip_attachment_id.x_download_folder_attachment_id
 
         return request.make_response(
             data=json.dumps(zip_data),
