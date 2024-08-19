@@ -3,11 +3,8 @@ from odoo import models, fields, api, _
 import logging
 import base64
 import io
-<<<<<<< HEAD
 import zipfile
-=======
 from PIL import Image
->>>>>>> b5f9234 (Revert "Update folder management DMS")
 
 _logger = logging.getLogger(__name__)
 
@@ -127,7 +124,6 @@ class DocumentFolder(models.Model):
         })
 
         return values
-<<<<<<< HEAD
 
     def document_folder_zip(self, attachment_id):
         folder_attachment = self.env['ir.attachment'].browse(int(attachment_id))
@@ -156,5 +152,3 @@ class DocumentFolder(models.Model):
             document_folder['x_downloaded_folder_id'] = download_folder_attachment.id
 
         return folder_attachment
-=======
->>>>>>> b5f9234 (Revert "Update folder management DMS")
