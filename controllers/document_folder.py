@@ -2,10 +2,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import json
-from collections import defaultdict
-from datetime import datetime, timedelta
-from psycopg2 import IntegrityError
-from psycopg2.errorcodes import UNIQUE_VIOLATION
 from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
@@ -19,7 +15,8 @@ class DocumentFolderController(http.Controller):
         channel_partner = request.env['mail.channel.partner']
         if thread_model == 'mail.channel':
             channel_partner = request.env['mail.channel.partner']._get_as_sudo_from_request_or_raise(request=request,
-                                                                                    channel_id=int(thread_id))
+                                                                                                     channel_id=int(
+                                                                                                         thread_id))
         folder = json.loads(folder)
         folder_vals = {
             'name': folder.get('parentFName'),
@@ -56,14 +53,15 @@ class DocumentFolderController(http.Controller):
             })
             folder_id['x_link_document_folder_id'] = folder_document_id.id
             ufiles_folder = {key: value for key, value in request.params.items() if key.startswith('ufiles_')}
-            request.env['document.folder'].sudo().generate_folder_hierarchy(folder_document_id,ufiles_folder,int(thread_id),thread_model)
+            request.env['document.folder'].sudo().generate_folder_hierarchy(folder_document_id, ufiles_folder,
+                                                                            int(thread_id), thread_model)
+            request.env['document.folder'].sudo().document_folder_zip(folder_id)
         except AccessError:
             folderData = {'error': _("You are not allowed to upload an attachment here.")}
         return request.make_response(
             data=json.dumps(folderData),
             headers=[('Content-Type', 'application/json')]
         )
-
 
     @http.route('/document/folder/download', methods=['POST'], type='http', auth='public')
     def get_download_folder(self, attachment_id, **kwargs):
