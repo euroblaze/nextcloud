@@ -27,6 +27,7 @@ class DocumentFolder(models.Model):
     x_original_folder_id = fields.Integer(string="Original Folder Id", store=True)
     x_is_folder = fields.Boolean(string="Folder", default=True, store=True)
     x_document_folder_path = fields.Char(string="Path", store=True)
+    x_downloaded_folder_id = fields.Many2one('ir.attachment', string="Download Zip")
 
     def generate_folder_hierarchy(self, parent_folder_id, files_list, res_id, res_model):
         if not (parent_folder_id and files_list):
@@ -145,6 +146,6 @@ class DocumentFolder(models.Model):
             }
 
             download_folder_attachment = self.env['ir.attachment'].sudo().create(folder_vals)
-            folder_attachment['x_downloaded_folder_id'] = download_folder_attachment.id
+            document_folder['x_downloaded_folder_id'] = download_folder_attachment.id
 
         return folder_attachment

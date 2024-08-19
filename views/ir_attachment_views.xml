@@ -7,7 +7,6 @@
             <xpath expr='//field[@name="type"]' position="after">
                 <field name="x_document_folder_id" attrs="{'invisible': [('type', '=', 'folder')]}"/>
                 <field name="x_link_document_folder_id" attrs="{'invisible': [('type', '!=', 'folder')]}"/>
-                <field name="x_downloaded_folder_id" invisible="1"/>
             </xpath>
             <xpath expr='//field[@name="mimetype"]' position="after">
                 <field name="nextcloud_attachment" attrs="{'invisible': [('nextcloud_attachment', '=', False)]}"/>
