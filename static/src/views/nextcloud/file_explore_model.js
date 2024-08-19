@@ -146,7 +146,7 @@ export class FileExploreModel extends Model {
             }
         }
         this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' && this.folder_selected : false;
-        this.feature.allowDownload = true ? this.fileexplore_mode == 'download' && (this.files_selected.length > 0 || this.folder_selected) : false;
+        this.feature.allowDownload = true ? this.fileexplore_mode == 'download' && this.files_selected.length > 0 : false;
         this.notify();
     }
 
@@ -197,23 +197,6 @@ export class FileExploreModel extends Model {
         var self = this;
         await this.orm.call('nextcloud.folder', 'download_file_from_nextcloud',
             [this.files_selected, this.origin_resmodel, this.origin_resid], {});
-
-        if (this.folder_selected) {
-            var download_folder = false
-            if (!this.files_selected.length) {
-                download_folder = true
-            } else {
-                if (this.files_selected[0].parent_id[0] == this.folder_selected) {
-                    download_folder = false
-                } else {
-                    download_folder = true
-                }
-            }
-            if (download_folder) {
-                await this.orm.call('nextcloud.folder', 'download_folder_from_nextcloud',
-                [this.folder_selected, this.origin_resmodel, this.origin_resid], {});
-            }
-        }
         return self.env.services.action.doAction({
             'type': 'ir.actions.act_window_close'
         });
