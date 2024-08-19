@@ -67,8 +67,8 @@ class DocumentFolderController(http.Controller):
     def get_download_folder(self, attachment_id, **kwargs):
         zip_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
         zip_data = {}
-        if zip_attachment_id.x_downloaded_attachment_id:
-            zip_data['folder_download_id'] = zip_attachment_id.x_downloaded_attachment_id
+        if zip_attachment_id.x_downloaded_folder_id:
+            zip_data['folder_download_id'] = zip_attachment_id.x_downloaded_folder_id
 
         return request.make_response(
             data=json.dumps(zip_data),

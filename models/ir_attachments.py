@@ -21,7 +21,7 @@ class IrAttachments(models.Model):
     x_is_folder = fields.Boolean(string="Is Folder", default=False)
     x_original_folder_id = fields.Integer(string="Original Folder Id", store=True)
     x_document_folder_path = fields.Char(string="Path", store=True)
-    x_downloaded_attachment_id = fields.Integer(string="Download Folder Attachment")
+    x_downloaded_folder_id = fields.Integer(string="Download Folder Attachment")
     type = fields.Selection(selection_add=[("folder", "Folder")], ondelete={'folder': 'cascade'})
 
     # NOTE: not delete nextcloud file when delete ir.attachment
