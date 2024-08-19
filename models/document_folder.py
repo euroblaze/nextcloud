@@ -145,6 +145,6 @@ class DocumentFolder(models.Model):
             }
 
             download_folder_attachment = self.env['ir.attachment'].sudo().create(folder_vals)
-            folder_attachment['x_downloaded_attachment_id'] = download_folder_attachment.id
+            folder_attachment['x_downloaded_folder_id'] = download_folder_attachment.id
 
         return folder_attachment
