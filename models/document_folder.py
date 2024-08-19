@@ -4,6 +4,7 @@ import logging
 import base64
 import io
 import zipfile
+from PIL import Image
 
 _logger = logging.getLogger(__name__)
 
@@ -71,6 +72,8 @@ class DocumentFolder(models.Model):
 
                 # Create the file in the final folder
                 self.create_file(parent_folder, ufile_v, file_name, parent_folder_id.id, res_id, res_model)
+
+            return True
         except Exception as e:
             _logger.error(f"Error generating folder hierarchy: {e}")
             return False
