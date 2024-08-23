@@ -75,6 +75,48 @@ class DocumentFolder(models.Model):
             _logger.error(f"Error generating folder hierarchy: {e}")
             return False
 
+    def generate_folder_hierarchy_exist(self, parent_folder_id, files_list, original_folder_id):
+        if not (parent_folder_id and files_list):
+            return False
+
+        try:
+            for ufile_k, ufile_v in files_list.items():
+                f_path = ufile_v.filename
+                path_items = f_path.split('/')
+                file_name = path_items.pop()  # Extract the file name
+                parent_folder = parent_folder_id
+
+                for sequence, item in enumerate(path_items[0:]):
+                    # Check if the folder already exists
+                    exist_folder = self.env['document.folder'].search([
+                        ('x_name', '=', item),
+                        ('x_sequence_folder', '=', sequence + 1),
+                        ('x_parent_folder_id', '=', parent_folder.id)
+                    ], limit=1)
+
+                    if not exist_folder:
+                        # Create a new folder if it doesn't exist
+                        document_subfolder = self.env['document.folder'].create({
+                            'x_name': item,
+                            'x_sequence_folder': sequence + 1,
+                            'x_parent_folder_id': parent_folder.id,
+                            'x_original_folder_id': original_folder_id.id,
+                            'x_document_folder_path': parent_folder.x_document_folder_path + f'/{item}',
+                            'x_res_id': parent_folder.x_res_id,
+                            'x_res_model': parent_folder_id.x_res_model
+                        })
+                    else:
+                        document_subfolder = exist_folder
+
+                    # Update the parent folder reference for the next iteration
+                    parent_folder = document_subfolder
+
+                # Create the file in the final folder
+                self.create_file(parent_folder, ufile_v, file_name, original_folder_id.id, False, False)
+        except Exception as e:
+            _logger.error(f"Error generating folder hierarchy: {e}")
+            return False
+
     def create_file(self, parent_folder, ufile, file_name, original_folder_id, res_id, res_model):
         try:
             # Check if the file is a BytesIO object

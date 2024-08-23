@@ -64,12 +64,29 @@
                                             title="Upload"
                                             t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}"
                                             tabindex="-1"/>
+                                    <button class="fe_fileexplorer_folder_tool_upload"
+                                            t-on-click="model.onUploadFileClicked"
+                                            t-if="model.fileexplore_mode == 'open_folder'"
+                                            title="Upload File"
+                                            t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}"
+                                            tabindex="-1"/>
                                     <button class="fe_fileexplorer_folder_tool_download"
                                             t-on-click="model.onDownloadClicked"
                                             t-if="model.fileexplore_mode == 'download'"
                                             t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}"
                                             title="Download" tabindex="-1"/>
+                                    <button class="fe_fileexplorer_folder_tool_download"
+                                            t-on-click="model.onDownloadDocumentClicked"
+                                            t-if="model.fileexplore_mode == 'open_folder'"
+                                            t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}"
+                                            title="Download File/Folder" tabindex="-1"/>
                                     <div class="fe_fileexplorer_folder_tool_separator"/>
+                                    <button class="fe_fileexplorer_folder_tool_upload"
+                                            t-on-click="model.onUploadFolderClicked"
+                                            t-if="model.fileexplore_mode == 'open_folder'"
+                                            title="Upload Folder"
+                                            t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowUpload}"
+                                            tabindex="-1"/>
                                     <!-- <button class="fe_fileexplorer_folder_tool_copy fe_fileexplorer_disabled" title="Copy" tabindex="-1"></button>
                                     <button class="fe_fileexplorer_folder_tool_paste" title="Paste" tabindex="-1"></button>
                                     <button class="fe_fileexplorer_folder_tool_cut" title="Cut" tabindex="-1"></button>

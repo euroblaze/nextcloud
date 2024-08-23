@@ -56,7 +56,10 @@ export class FileExploreModel extends Model {
         // Trigger method
         this.onItemClicked = this.onItemClicked.bind(this);
         this.onUploadClicked = this.onUploadClicked.bind(this);
+        this.onUploadFileClicked = this.onUploadFileClicked.bind(this);
         this.onDownloadClicked = this.onDownloadClicked.bind(this);
+        this.onUploadFolderClicked = this.onUploadFolderClicked.bind(this);
+        this.onDownloadDocumentClicked = this.onDownloadDocumentClicked.bind(this);
     }
 
     getDataById(data, id) {
@@ -89,7 +92,7 @@ export class FileExploreModel extends Model {
             !this.current_folder.child_ids ? this.current_folder.x_child_folder_ids.concat(this.current_folder.x_child_file_ids) : this.current_folder.child_ids
         );
         this.folder_selected = this.current_folder.id;
-        this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' && this.folder_selected : false;
+        this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' || this.fileexplore_mode == 'open_folder' && this.folder_selected : false;
         this.notify();
     }
 
@@ -145,8 +148,8 @@ export class FileExploreModel extends Model {
                 this.files_selected = this.files_selected.filter(item => item !== select_file);
             }
         }
-        this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' && this.folder_selected : false;
-        this.feature.allowDownload = true ? this.fileexplore_mode == 'download' && (this.files_selected.length > 0 || this.folder_selected) : false;
+        this.feature.allowUpload = true ? (this.fileexplore_mode == 'upload' || this.fileexplore_mode == 'open_folder') && this.folder_selected : false;
+        this.feature.allowDownload = true ? (this.fileexplore_mode == 'download' || this.fileexplore_mode == 'open_folder') && (this.files_selected.length > 0 || this.folder_selected) : false;
         this.notify();
     }
 
@@ -193,6 +196,19 @@ export class FileExploreModel extends Model {
         return formData;
     }
 
+    _createFormDataDocumentFolder(files) {
+        const formData = new window.FormData();
+        formData.append('csrf_token', core.csrf_token);
+        formData.append('parent_attachment_folder_id', this.attachment_id);
+        formData.append('current_folder_id', this.current_folder.id);
+
+        for (let i = 0; i < files.length; i++) {
+            // Use template literals to construct the key
+            formData.append('ufiles_'+i, files[i], files[i].webkitRelativePath || files[i].name);
+        }
+        return formData;
+    }
+
     async onDownloadClicked(ev) {
         var self = this;
         await this.orm.call('nextcloud.folder', 'download_file_from_nextcloud',
@@ -219,6 +235,126 @@ export class FileExploreModel extends Model {
         });
     }
 
+    fileDownload(files_selected) {
+        var downloadUrl = '#'
+        files_selected.forEach((file) => {
+            if (!file.accessToken && file.origin_resid && file.origin_resmodel === 'mail.channel') {
+                downloadUrl = `/mail/channel/${file.origin_resid}/attachment/${file.id}?download=true`;
+            } else {
+                const accessToken = file.accessToken ? `access_token=${file.accessToken}&` : '';
+                downloadUrl = `/web/content/ir.attachment/${file.id}/datas?${accessToken}download=true`;
+            }
+            const downloadLink = document.createElement('a');
+            downloadLink.setAttribute('href', downloadUrl);
+            // Adding 'download' attribute into a link prevents open a new tab or change the current location of the window.
+            // This avoids interrupting the activity in the page such as rtc call.
+            downloadLink.setAttribute('download','');
+            downloadLink.click();
+        })
+    }
+
+    async onDownloadDocumentClicked(ev){
+        var self = this;
+        console.log(this)
+        if (this.files_selected) {
+            this.fileDownload(this.files_selected)
+        }
+    }
+
+    openBrowserFileUpload(ev) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.webkitdirectory = false; // Allow folder selection
+        input.style.display = 'none'; // Ensure it's not visible
+        document.body.appendChild(input);
+        input.addEventListener('change', async (ev) => {
+            const files = ev.target.files; // Get the selected file
+            if (files) {
+                // Send the file to the server
+                const response = await fetch('/document/folder/uploadFileExistFolder', {
+                    method: 'POST',
+                    body: this._createFormDataDocumentFolder(files),
+                });
+                framework.blockUI();
+                const response_data = await response.json();
+                framework.unblockUI();
+                this.env.services.action.doAction({
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'success',
+                        'message': _("Your file is successfully uploaded !"),
+                        'next': {'type': 'ir.actions.act_window_close'},
+                    }
+                });
+            }
+        });
+
+        // Trigger the file uploader dialog
+        input.click();
+    }
+
+    async onUploadFileClicked(ev){
+        var self = this;
+        framework.blockUI();
+        try {
+            await this.openBrowserFileUpload(ev)
+            framework.unblockUI();
+        } catch (e) {
+            framework.unblockUI();
+            if (e.name !== 'AbortError') {
+                throw e;
+            }
+        }
+    }
+
+    openBrowserFolderUpload(ev){
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.webkitdirectory = true; // Allow folder selection
+        input.style.display = 'none'; // Ensure it's not visible
+        document.body.appendChild(input);
+        input.addEventListener('change', async (ev) => {
+            const files = ev.target.files; // Get the selected file
+            if (files) {
+                // Send the file to the server
+                const response = await fetch('/document/folder/uploadFolderExistFolder', {
+                    method: 'POST',
+                    body: this._createFormDataDocumentFolder(files),
+                });
+                framework.blockUI();
+                const response_data = await response.json();
+                framework.unblockUI();
+                this.env.services.action.doAction({
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'success',
+                        'message': _("Your Folder is successfully uploaded !"),
+                        'next': {'type': 'ir.actions.act_window_close'},
+                    }
+                });
+            }
+        });
+
+        // Trigger the file uploader dialog
+        input.click();
+    }
+
+    async onUploadFolderClicked(ev){
+        var self = this;
+        framework.blockUI();
+        try {
+            await this.openBrowserFolderUpload(ev)
+            framework.unblockUI();
+        } catch (e) {
+            framework.unblockUI();
+            if (e.name !== 'AbortError') {
+                throw e;
+            }
+        }
+    }
+
     async onUploadClicked(ev) {
         var self = this;
         framework.blockUI();
@@ -228,6 +364,7 @@ export class FileExploreModel extends Model {
                 body: this._createFormDataNextcloud()
             });
             const response_data = await response.json();
+
             if (response_data.error) {
                 self.env.services['notification'].notify({
                     type: 'danger',
