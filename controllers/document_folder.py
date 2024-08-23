@@ -2,11 +2,15 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import json
+import io
+import base64
+import logging
 from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 from odoo.tools.translate import _
 
+_logger = logging.getLogger(__name__)
 
 class DocumentFolderController(http.Controller):
 
@@ -73,5 +77,72 @@ class DocumentFolderController(http.Controller):
 
         return request.make_response(
             data=json.dumps(zip_data),
+            headers=[('Content-Type', 'application/json')]
+        )
+
+    @http.route('/document/folder/uploadFileExistFolder', methods=['POST'], type='http', auth='public')
+    def document_folder_exist_upload_file(self, parent_attachment_folder_id, current_folder_id=False, **kwargs):
+
+        if not (parent_attachment_folder_id and current_folder_id):
+            attachmentData = {'error': _("Missing attachment ID.")}
+        else:
+            parent_attachment_folder = request.env['ir.attachment'].browse(int(parent_attachment_folder_id))
+            upload_document_folder = request.env['document.folder'].browse(int(current_folder_id))
+            ufiles_upload = {key: value for key, value in request.params.items() if key.startswith('ufiles_')}
+            if ufiles_upload:
+                for ufile_k, ufile_v in ufiles_upload.items():
+                    parent_folder = upload_document_folder
+                    file_name = ufile_v.filename
+                    parent_folder_id = parent_attachment_folder.x_link_document_folder_id
+                    try:
+                        # Check if the file is a BytesIO object
+                        if isinstance(ufile_v.stream, io.BytesIO):
+                            file_content = ufile_v.stream.read()  # Read the file content from the stream
+                        else:
+                            file_content = ufile_v.read()  # Read the file content
+
+                        # Convert the file content to base64 for storage
+                        file_base64 = base64.b64encode(file_content)
+
+                        vals = {
+                            'name': file_name,
+                            'datas': file_base64,  # Store the base64-encoded content
+                            'x_document_folder_id': parent_folder.id,
+                            'x_original_folder_id': parent_folder_id.id,
+                            'x_document_folder_path': f'{parent_folder.x_document_folder_path}/{file_name}',
+                        }
+                        request.env['ir.attachment'].create(vals)
+                    except Exception as e:
+                        _logger.error(f"Error creating file: {file_name}, Error: {e}")
+                        return False
+
+            attachmentData = {
+                'parent_attachment_folder': parent_attachment_folder.id
+            }
+
+        return request.make_response(
+            data=json.dumps(attachmentData),
+            headers=[('Content-Type', 'application/json')]
+        )
+
+    @http.route('/document/folder/uploadFolderExistFolder', methods=['POST'], type='http', auth='public')
+    def document_folder_exist_upload_folder(self, parent_attachment_folder_id, current_folder_id=False, **kwargs):
+
+        if not (parent_attachment_folder_id and current_folder_id):
+            attachmentData = {'error': _("Missing attachment ID.")}
+        else:
+            parent_attachment_folder = request.env['ir.attachment'].browse(int(parent_attachment_folder_id))
+            parent_folder_id = parent_attachment_folder.x_link_document_folder_id
+            upload_document_folder = request.env['document.folder'].browse(int(current_folder_id))
+            ufiles_upload = {key: value for key, value in request.params.items() if key.startswith('ufiles_')}
+            if ufiles_upload:
+                folder_name = ufiles_upload['ufiles_0'].filename.split('/')[0]
+                request.env['document.folder'].sudo().generate_folder_hierarchy_exist(upload_document_folder, ufiles_upload, parent_folder_id)
+            attachmentData = {
+                'parent_attachment_folder': parent_attachment_folder.id
+            }
+
+        return request.make_response(
+            data=json.dumps(attachmentData),
             headers=[('Content-Type', 'application/json')]
         )
