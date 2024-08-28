@@ -9,8 +9,10 @@ from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 from odoo.tools.translate import _
+import re
 
 _logger = logging.getLogger(__name__)
+
 
 class DocumentFolderController(http.Controller):
 
@@ -80,6 +82,15 @@ class DocumentFolderController(http.Controller):
             headers=[('Content-Type', 'application/json')]
         )
 
+    def extract_path(self, origin_url, url):
+        match = re.search(rf'{origin_url}(.*)', url)
+        if match:
+            path = match.group(1)
+            # Normalize the path to remove redundant slashes
+            normalized_path = re.sub(r'/+', '/', path)
+            return normalized_path
+        return '/'
+
     @http.route('/document/folder/uploadFileExistFolder', methods=['POST'], type='http', auth='public')
     def document_folder_exist_upload_file(self, parent_attachment_folder_id, current_folder_id=False, **kwargs):
 
@@ -111,7 +122,28 @@ class DocumentFolderController(http.Controller):
                             'x_original_folder_id': parent_folder_id.id,
                             'x_document_folder_path': f'{parent_folder.x_document_folder_path}/{file_name}',
                         }
-                        request.env['ir.attachment'].create(vals)
+                        file = request.env['ir.attachment'].create(vals)
+                        if parent_attachment_folder.nextcloud_attachment:
+                            company = request.env.company.sudo()
+                            nextcloud_params = company.get_nextcloud_information(res_model=False,res_id=False)
+                            username = nextcloud_params.get('nextcloud_username')
+                            password = nextcloud_params.get('nextcloud_password')
+                            folder_mapping = nextcloud_params.get('folder_mapping')
+                            url = nextcloud_params.get('nextcloud_url')
+                            origin_url = f"{url}/remote.php/dav/files/{username}/"
+                            parent_nc_path = self.extract_path(origin_url, parent_attachment_folder.nextcloud_share_link)
+                            if not parent_nc_path:
+                                parent_nc_path = origin_url + '/'
+                            # Check if `b` is the last part of `a`
+                            if parent_nc_path.endswith(upload_document_folder.x_document_folder_path):
+                                current_nc_path = parent_nc_path
+                            else:
+                                # Merge the two paths if necessary
+                                current_nc_path = f'{parent_nc_path}/{upload_document_folder.x_document_folder_path.split("/", 1)[-1]}'
+                            nc_current_folder_id = request.env['nextcloud.folder'].search(
+                                [('name', '=', current_nc_path)], limit=1)
+                            if nc_current_folder_id:
+                                file_nc = file.request_upload_file_nextcloud(nc_current_folder_id.id)
                     except Exception as e:
                         _logger.error(f"Error creating file: {file_name}, Error: {e}")
                         return False
@@ -137,7 +169,40 @@ class DocumentFolderController(http.Controller):
             ufiles_upload = {key: value for key, value in request.params.items() if key.startswith('ufiles_')}
             if ufiles_upload:
                 folder_name = ufiles_upload['ufiles_0'].filename.split('/')[0]
-                request.env['document.folder'].sudo().generate_folder_hierarchy_exist(upload_document_folder, ufiles_upload, parent_folder_id)
+                request.env['document.folder'].sudo().generate_folder_hierarchy_exist(upload_document_folder,
+                                                                                      ufiles_upload, parent_folder_id)
+                if parent_attachment_folder.nextcloud_attachment:
+                    folder_vals = {
+                        'name': folder_name,
+                        'x_is_folder': True,
+                        'mimetype': 'document/folder',
+                        'type': 'folder'
+                    }
+                    folder_id = request.env['ir.attachment'].create(folder_vals)
+                    upload_folder = upload_document_folder.x_child_folder_ids.filtered(lambda a: a.x_name == folder_name)[0]
+                    if upload_folder:
+                        folder_id['x_link_document_folder_id'] = upload_folder.id
+                    company = request.env.company.sudo()
+                    nextcloud_params = company.get_nextcloud_information(res_model=False, res_id=False)
+                    username = nextcloud_params.get('nextcloud_username')
+                    password = nextcloud_params.get('nextcloud_password')
+                    folder_mapping = nextcloud_params.get('folder_mapping')
+                    url = nextcloud_params.get('nextcloud_url')
+                    origin_url = f"{url}/remote.php/dav/files/{username}/"
+                    parent_nc_path = self.extract_path(origin_url, parent_attachment_folder.nextcloud_share_link)
+                    if not parent_nc_path:
+                        parent_nc_path = origin_url + '/'
+                    # Check if `b` is the last part of `a`
+                    if parent_nc_path.endswith(upload_document_folder.x_document_folder_path):
+                        current_nc_path = parent_nc_path
+                    else:
+                        # Merge the two paths if necessary
+                        current_nc_path = f'{parent_nc_path}/{upload_document_folder.x_document_folder_path.split("/", 1)[-1]}'
+                    nc_current_folder_id = request.env['nextcloud.folder'].search(
+                        [('name', '=', current_nc_path)], limit=1)
+                    if nc_current_folder_id:
+                        folder_nc = folder_id.send_request_create_folder_nextcloud(nc_current_folder_id.id)
+
             attachmentData = {
                 'parent_attachment_folder': parent_attachment_folder.id
             }

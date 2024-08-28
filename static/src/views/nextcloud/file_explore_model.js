@@ -192,7 +192,7 @@ export class FileExploreModel extends Model {
         const formData = new window.FormData();
         formData.append('csrf_token', core.csrf_token);
         formData.append('attachment_id', this.attachment_id);
-        formData.append('folder_id', this.folder_selected);
+        formData.append('folder_id', this.current_folder.id);
         return formData;
     }
 
@@ -255,7 +255,6 @@ export class FileExploreModel extends Model {
 
     async onDownloadDocumentClicked(ev){
         var self = this;
-        console.log(this)
         if (this.files_selected) {
             this.fileDownload(this.files_selected)
         }
@@ -271,11 +270,11 @@ export class FileExploreModel extends Model {
             const files = ev.target.files; // Get the selected file
             if (files) {
                 // Send the file to the server
+                framework.blockUI();
                 const response = await fetch('/document/folder/uploadFileExistFolder', {
                     method: 'POST',
                     body: this._createFormDataDocumentFolder(files),
                 });
-                framework.blockUI();
                 const response_data = await response.json();
                 framework.unblockUI();
                 this.env.services.action.doAction({
@@ -318,11 +317,11 @@ export class FileExploreModel extends Model {
             const files = ev.target.files; // Get the selected file
             if (files) {
                 // Send the file to the server
+                framework.blockUI();
                 const response = await fetch('/document/folder/uploadFolderExistFolder', {
                     method: 'POST',
                     body: this._createFormDataDocumentFolder(files),
                 });
-                framework.blockUI();
                 const response_data = await response.json();
                 framework.unblockUI();
                 this.env.services.action.doAction({

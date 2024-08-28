@@ -16,8 +16,8 @@ class IrAttachments(models.Model):
     nextcloud_folder_id = fields.Many2one("nextcloud.folder", string="Nextcloud Folder")
 
     # Non NC Document Folder
-    x_document_folder_id = fields.Many2one("document.folder", string="Parent Folder")
-    x_link_document_folder_id = fields.Many2one("document.folder", string="Document Folder Link")
+    x_document_folder_id = fields.Many2one("document.folder", string="Parent Folder", ondelete="cascade")
+    x_link_document_folder_id = fields.Many2one("document.folder", string="Document Folder Link", ondelete="cascade")
     x_is_folder = fields.Boolean(string="Is Folder", default=False)
     x_original_folder_id = fields.Integer(string="Original Folder Id", store=True)
     x_document_folder_path = fields.Char(string="Path", store=True)
@@ -91,7 +91,8 @@ class IrAttachments(models.Model):
             self.write(attachmentData)
             del attachmentData['nextcloud_folder_id']
             company.send_request_get_folder(origin_url, file_path, username, password)
-            folder_mapping.write({'nextcloud_folder_id': folder_id})
+            if folder_mapping:
+                folder_mapping.write({'nextcloud_folder_id': folder_id})
         else:
             attachmentData = {'error': _("Cannot upload file to NextCloud.")}
         return attachmentData
@@ -123,6 +124,9 @@ class IrAttachments(models.Model):
         if folder:
             path_arr.insert(0, folder)
 
+            if path_arr[0].split('/')[-1] == path_arr[1].split('/')[0]:
+                path_arr[1] = uploaded_folder.x_name
+
         folder_path = self._get_unique_folder_path(origin_url, path_arr, head, username, password)
 
         share_mkcol_url = f"{origin_url}/{folder_path}"
@@ -138,7 +142,8 @@ class IrAttachments(models.Model):
             if folder != '/':
                 origin_url += '/'
             company.send_request_get_folder(origin_url, folder_path, username, password)
-            folder_mapping.write({'nextcloud_folder_id': folder_id})
+            if folder_mapping:
+                folder_mapping.write({'nextcloud_folder_id': folder_id})
             parent_nc_folder = NextcloudEnv.search(
                 [('name', '=', folder_path if folder != '/' else uploaded_folder.x_document_folder_path)], limit=1)
             if uploaded_folder.x_child_file_ids:
@@ -181,7 +186,8 @@ class IrAttachments(models.Model):
             if response.status_code == 201:
                 self.company_id.sudo().send_request_get_folder(origin_url, folder_path, authen_params['username'],
                                                                authen_params['password'])
-                folder_mapping.write({'nextcloud_folder_id': nc_folder_id})
+                if folder_mapping:
+                    folder_mapping.write({'nextcloud_folder_id': nc_folder_id})
                 nc_current_folder = self.env['nextcloud.folder'].search(
                     [('name', '=', folder_path if nc_folder != '/' else folder.x_document_folder_path)],
                     limit=1)
