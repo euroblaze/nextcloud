@@ -192,7 +192,7 @@ export class FileExploreModel extends Model {
         const formData = new window.FormData();
         formData.append('csrf_token', core.csrf_token);
         formData.append('attachment_id', this.attachment_id);
-        formData.append('folder_id', this.folder_selected);
+        formData.append('folder_id', this.current_folder.id);
         return formData;
     }
 
@@ -271,11 +271,11 @@ export class FileExploreModel extends Model {
             const files = ev.target.files; // Get the selected file
             if (files) {
                 // Send the file to the server
+                framework.blockUI();
                 const response = await fetch('/document/folder/uploadFileExistFolder', {
                     method: 'POST',
                     body: this._createFormDataDocumentFolder(files),
                 });
-                framework.blockUI();
                 const response_data = await response.json();
                 framework.unblockUI();
                 this.env.services.action.doAction({
@@ -296,6 +296,7 @@ export class FileExploreModel extends Model {
 
     async onUploadFileClicked(ev){
         var self = this;
+        console.log(self)
         framework.blockUI();
         try {
             await this.openBrowserFileUpload(ev)
@@ -318,11 +319,11 @@ export class FileExploreModel extends Model {
             const files = ev.target.files; // Get the selected file
             if (files) {
                 // Send the file to the server
+                framework.blockUI();
                 const response = await fetch('/document/folder/uploadFolderExistFolder', {
                     method: 'POST',
                     body: this._createFormDataDocumentFolder(files),
                 });
-                framework.blockUI();
                 const response_data = await response.json();
                 framework.unblockUI();
                 this.env.services.action.doAction({
@@ -357,6 +358,7 @@ export class FileExploreModel extends Model {
 
     async onUploadClicked(ev) {
         var self = this;
+        console.log(self)
         framework.blockUI();
         try {
             const response = await this.env.browser.fetch('/mail/attachment/uploadnextcloud', {

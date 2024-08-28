@@ -14,7 +14,7 @@ class DocumentFolder(models.Model):
     _rec_name = 'x_name'
 
     x_name = fields.Char(string='Folder Name', store=True)
-    x_parent_folder_id = fields.Many2one(comodel_name='document.folder', string='Parent Folder')
+    x_parent_folder_id = fields.Many2one(comodel_name='document.folder', string='Parent Folder', ondelete="cascade")
     x_child_folder_ids = fields.One2many(comodel_name='document.folder', inverse_name='x_parent_folder_id',
                                          string="Child Folders")
     x_child_file_ids = fields.One2many(comodel_name='ir.attachment', inverse_name='x_document_folder_id',
@@ -22,12 +22,21 @@ class DocumentFolder(models.Model):
     x_count_total_child = fields.Char(string="Total Resources")
     x_res_id = fields.Integer(string="Resource Id")
     x_res_model = fields.Char(string="Resource Model")
-    x_linked_attachment = fields.Many2one('ir.attachment', string="Linked Attachment")
+    x_linked_attachment = fields.Many2one('ir.attachment', string="Linked Attachment", ondelete="cascade")
     x_sequence_folder = fields.Integer(string="Sequence Folder", store=True)
     x_original_folder_id = fields.Integer(string="Original Folder Id", store=True)
     x_is_folder = fields.Boolean(string="Folder", default=True, store=True)
     x_document_folder_path = fields.Char(string="Path", store=True)
     x_downloaded_folder_id = fields.Many2one('ir.attachment', string="Download Zip")
+
+    def unlink(self):
+        downloaded_folder_id = False
+        if self.x_downloaded_folder_id:
+            downloaded_folder_id = self.x_downloaded_folder_id
+        if downloaded_folder_id:
+            downloaded_folder_id.unlink()
+        ret = super(DocumentFolder, self).unlink()
+        return ret
 
     def generate_folder_hierarchy(self, parent_folder_id, files_list, res_id, res_model):
         if not (parent_folder_id and files_list):
