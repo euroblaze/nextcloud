@@ -255,7 +255,6 @@ export class FileExploreModel extends Model {
 
     async onDownloadDocumentClicked(ev){
         var self = this;
-        console.log(this)
         if (this.files_selected) {
             this.fileDownload(this.files_selected)
         }
@@ -296,7 +295,6 @@ export class FileExploreModel extends Model {
 
     async onUploadFileClicked(ev){
         var self = this;
-        console.log(self)
         framework.blockUI();
         try {
             await this.openBrowserFileUpload(ev)
@@ -358,7 +356,6 @@ export class FileExploreModel extends Model {
 
     async onUploadClicked(ev) {
         var self = this;
-        console.log(self)
         framework.blockUI();
         try {
             const response = await this.env.browser.fetch('/mail/attachment/uploadnextcloud', {

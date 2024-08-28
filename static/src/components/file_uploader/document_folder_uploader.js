@@ -105,7 +105,6 @@ patch(FileUploader.prototype,'nextcloud/static/src/components/file_uploader/docu
     },
 
     async _onChangeAttachment(ev) {
-        console.log(ev)
         if (!this.getParentFolder(ev.target.files)) {
           await this.uploadFiles(ev.target.files);
         }else{
