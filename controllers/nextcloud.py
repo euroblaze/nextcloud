@@ -144,11 +144,17 @@ class BinaryNextCloud(http.Controller):
         )
 
     @http.route('/nextcloud/attachment/getPublicLink', methods=['POST'], type='http', auth='public')
-    def generate_public_link_attachment(self, attachment_id, nc_object_public=False, folder_id=False, res_id=None, res_model=None, **kwargs):
+    def generate_public_link_nextcloud_attachment(self, attachment_id, nc_object_public=False, folder_id=False, res_id=None, res_model=None, **kwargs):
         results = {}
-        if nc_object_public:
+        if nc_object_public != 'false':
             nc_attachment_id = request.env['nextcloud.folder'].browse(int(nc_object_public))
             attachment_share_path = nc_attachment_id.name
+            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
+                                                                                   res_model)
+            results['nc_public_link'] = nc_share_link
+        if attachment_id:
+            nc_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
+            attachment_share_path = nc_attachment_id.nextcloud_share_link
             nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
                                                                                    res_model)
             results['nc_public_link'] = nc_share_link

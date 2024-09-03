@@ -519,37 +519,14 @@ export class FileExploreModel extends Model {
         }
         let identify_key = selected_info.split('_');
         var objectKey = parseInt(identify_key[1])
+        var publicLink = false
         if (this.fileexplore_mode != 'open_folder'){
             try {
                 const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
                     method: 'POST',
                     body: this._createFormDataNextcloud(objectKey)
                 });
-                const publicLink = await response.json();
-                if (!publicLink) {
-                    this.env.services.action.doAction({
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'danger',
-                            'message': _("Get Public Link Failed!"),
-                            'next': {'type': 'ir.actions.act_window_close'},
-                        }
-                    });
-                } else {
-                    browser.navigator.clipboard.writeText(
-                        `${publicLink['nc_public_link']}`
-                    );
-                    this.env.services.action.doAction({
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'success',
-                            'message': _("Copy public link successfully !"),
-                            'next': {'type': 'ir.actions.act_window_close'},
-                        }
-                    });
-                }
+                publicLink = await response.json();
             } catch (e) {
                 framework.unblockUI();
                 if (e.name !== 'AbortError') {
@@ -558,36 +535,36 @@ export class FileExploreModel extends Model {
             }
         } else {
             if (identify_key[0] == 'file') {
-                const response = await this.env.browser.fetch('/mail/attachment/getPublicLink', {
+                const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
                     method: 'POST',
-                    body: this._createFormDataNextcloud(objectKey,objectKey)
+                    body: this._createFormDataNextcloud(false,objectKey)
                 });
-                const publicLink = await response.json();
-                if (!publicLink) {
-                    this.env.services.action.doAction({
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'danger',
-                            'message': _("Get Public Link Failed!"),
-                            'next': {'type': 'ir.actions.act_window_close'},
-                        }
-                    });
-                } else {
-                    browser.navigator.clipboard.writeText(
-                        `${publicLink['nc_public_link']}`
-                    );
-                    this.env.services.action.doAction({
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'type': 'success',
-                            'message': _("Copy public link successfully !"),
-                            'next': {'type': 'ir.actions.act_window_close'},
-                        }
-                    });
-                }
+                publicLink = await response.json();
             }
+        }
+        if (!publicLink) {
+            this.env.services.action.doAction({
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'danger',
+                    'message': _("Get Public Link Failed!"),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            });
+        } else {
+            browser.navigator.clipboard.writeText(
+                `${publicLink['nc_public_link']}`
+            );
+            this.env.services.action.doAction({
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'success',
+                    'message': _("Copy public link successfully !"),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            });
         }
     }
 }
