@@ -6,7 +6,6 @@ const { Component, hooks } = owl;
 
 class NextcloudSystray extends Component {
     setup() {
-        this.hm = useService("home_menu");
         this.rootRef = hooks.useRef("root");
         this.orm = useService("orm");
     }
