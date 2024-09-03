@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+
+<t t-name="nextcloud.SystrayItem" owl="1">
+    <div t-attf-class="o_nextcloud_navbar_item d-none d-md-inline-block" t-ref="root" t-on-click.prevent="_onClickSyncNC">
+        <a href="#" title="Sync Nextcloud">
+            <img width="21px" height="21px" src="/nextcloud/static/img/nextcloud_sync_icon_small.png" alt="Sync Nextcloud Icon" title="Sync Nextcloud" aria-label="Sync Nextcloud"/>
+        </a>
+    </div>
+</t>
+
+</templates>
