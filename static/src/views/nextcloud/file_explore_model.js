@@ -5,6 +5,7 @@ const {useRef} = hooks;
 import { Race } from "@web/core/utils/concurrency";
 import { Model } from "@web/views/helpers/model";
 import framework from 'web.framework';
+import { browser } from "@web/core/browser/browser";
 
 import core from 'web.core';
 
@@ -47,7 +48,7 @@ export class FileExploreModel extends Model {
         this.current_folder_data = [];
         this.folder_selected = false;
         this.files_selected = [];
-
+        this.allowPublicLink = false;
         this.feature = Object.assign({}, {
             allowUpload: false,
             allowDownload: false,
@@ -60,6 +61,7 @@ export class FileExploreModel extends Model {
         this.onDownloadClicked = this.onDownloadClicked.bind(this);
         this.onUploadFolderClicked = this.onUploadFolderClicked.bind(this);
         this.onDownloadDocumentClicked = this.onDownloadDocumentClicked.bind(this);
+        this.onClickPublicLink = this.onClickPublicLink.bind(this);
     }
 
     getDataById(data, id) {
@@ -93,6 +95,7 @@ export class FileExploreModel extends Model {
         );
         this.folder_selected = this.current_folder.id;
         this.feature.allowUpload = true ? this.fileexplore_mode == 'upload' || this.fileexplore_mode == 'open_folder' && this.folder_selected : false;
+        await this.documentFolderPublicNC()
         this.notify();
     }
 
@@ -188,11 +191,18 @@ export class FileExploreModel extends Model {
         this.notify();
     }
 
-    _createFormDataNextcloud() {
+    _createFormDataNextcloud(objectPublic,nc_attachment_id) {
         const formData = new window.FormData();
         formData.append('csrf_token', core.csrf_token);
-        formData.append('attachment_id', this.attachment_id);
+        if (nc_attachment_id) {
+            formData.append('attachment_id', nc_attachment_id);
+        } else {
+            formData.append('attachment_id', this.attachment_id);
+        }
         formData.append('folder_id', this.current_folder.id);
+        formData.append('res_id', this.origin_resid);
+        formData.append('res_model', this.origin_resmodel);
+        formData.append('nc_object_public', objectPublic)
         return formData;
     }
 
@@ -479,6 +489,103 @@ export class FileExploreModel extends Model {
                     this.Destroy();
 
                     StartPathSegmentFolderSelection(elems.pathsegmentswrap.children[pos + 1]);
+                }
+            }
+        }
+    }
+
+    async documentFolderPublicNC(){
+        const attachmentId = this.attachment_id;
+
+        if (attachmentId) {
+            const attachmentNC = await this.orm.searchRead(
+                "ir.attachment",
+                [["id", "=", attachmentId]],
+                ["nextcloud_attachment"]
+            );
+
+            if (attachmentNC && attachmentNC[0]['nextcloud_attachment']) {
+                this.allowPublicLink = true;
+            }
+        }
+    }
+
+    async onClickPublicLink(ev){
+        ev.stopPropagation()
+        let $currentTarget = $(ev.target).parents('.fe_fileexplorer_item_wrap');
+        let selected_info = $currentTarget.getAttributes().id;
+        if (selected_info === undefined) {
+            return;
+        }
+        let identify_key = selected_info.split('_');
+        var objectKey = parseInt(identify_key[1])
+        if (this.fileexplore_mode != 'open_folder'){
+            try {
+                const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
+                    method: 'POST',
+                    body: this._createFormDataNextcloud(objectKey)
+                });
+                const publicLink = await response.json();
+                if (!publicLink) {
+                    this.env.services.action.doAction({
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'danger',
+                            'message': _("Get Public Link Failed!"),
+                            'next': {'type': 'ir.actions.act_window_close'},
+                        }
+                    });
+                } else {
+                    browser.navigator.clipboard.writeText(
+                        `${publicLink['nc_public_link']}`
+                    );
+                    this.env.services.action.doAction({
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'success',
+                            'message': _("Copy public link successfully !"),
+                            'next': {'type': 'ir.actions.act_window_close'},
+                        }
+                    });
+                }
+            } catch (e) {
+                framework.unblockUI();
+                if (e.name !== 'AbortError') {
+                    throw e;
+                }
+            }
+        } else {
+            if (identify_key[0] == 'file') {
+                const response = await this.env.browser.fetch('/mail/attachment/getPublicLink', {
+                    method: 'POST',
+                    body: this._createFormDataNextcloud(objectKey,objectKey)
+                });
+                const publicLink = await response.json();
+                if (!publicLink) {
+                    this.env.services.action.doAction({
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'danger',
+                            'message': _("Get Public Link Failed!"),
+                            'next': {'type': 'ir.actions.act_window_close'},
+                        }
+                    });
+                } else {
+                    browser.navigator.clipboard.writeText(
+                        `${publicLink['nc_public_link']}`
+                    );
+                    this.env.services.action.doAction({
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'type': 'success',
+                            'message': _("Copy public link successfully !"),
+                            'next': {'type': 'ir.actions.act_window_close'},
+                        }
+                    });
                 }
             }
         }

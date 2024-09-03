@@ -28,6 +28,7 @@ class NextCloudFolder(models.Model):
     file_type = fields.Char()
     username = fields.Char()
     active = fields.Boolean(default=True)
+    nextcloud_public_link = fields.Char(string="Nextcloud Public Link", readonly=True)
 
     @api.depends('name')
     def _compute_parent_id(self):
@@ -271,4 +272,118 @@ class NextCloudFolder(models.Model):
                 self.create_file(parent_folder, ufile_v, ufile_k, file_name, parent_folder_id.id, res_id, res_model)
         except Exception as e:
             _logger.error(f"Error generating folder hierarchy: {e}")
+            return False
+
+    @api.model
+    def sync_nextcloud_folder(self):
+        company = self.env.user.company_id.sudo()
+        nextcloud_params = company.get_nextcloud_information(skip_check=True)
+        url = nextcloud_params.get('nextcloud_url')
+        username = nextcloud_params.get('nextcloud_username')
+        password = nextcloud_params.get('nextcloud_password')
+        folder = nextcloud_params.get('nextcloud_folder')
+
+        if not url or not username or not password:
+            raise ValueError(_('NextCloud account is invalid! Please set up NextCloud account!'))
+
+        url += '/remote.php/dav/files/%s/' % username
+        existing_records = self.env['nextcloud.folder'].search([('username', '=', username)])
+        synced_files = self.send_request_get_folder(url, folder, username, password)
+
+        existing_etags = set(existing_records.mapped('etag'))
+        synced_etags = {file['etag'] for file in synced_files}
+
+        # Delete records that no longer exist in NextCloud
+        to_delete = existing_records.filtered(lambda rec: rec.etag not in synced_etags)
+        if to_delete:
+            to_delete.unlink()
+
+        return synced_files
+
+    @api.model
+    def send_request_get_folder(self, request_url, folder_path, username, password):
+        _logger.info("Sync NextCloud folder of %s to Odoo" % folder_path)
+        NCFolder = self.env['nextcloud.folder']
+        extra_path = '/remote.php/dav/files/%s/' % username
+        synced_files = []
+
+        payload = '''<?xml version="1.0" encoding="UTF-8"?>
+    <d:propfind xmlns:d="DAV:">
+    <d:prop xmlns:oc="http://owncloud.org/ns">
+        <d:resourcetype/>
+        <d:getcontenttype/>
+        <oc:fileid/>
+    </d:prop>
+    </d:propfind>'''
+
+        request_header = {
+            'OCS-APIRequest': 'true',
+            'Depth': 'infinity'
+        }
+
+        get_folder_response = requests.request("PROPFIND", request_url + folder_path, headers=request_header,
+                                               data=payload, auth=(username, password))
+
+        if get_folder_response.status_code != 207:  # Multi-Status (WebDAV; RFC 4918)
+            _logger.error(f"Error fetching Nextcloud folder: {get_folder_response.status_code}")
+            return []
+
+        # Parse the XML response content using ET.fromstring
+        xml_data = get_folder_response.content.decode("utf-8")
+        root = ET.fromstring(xml_data)
+
+        for response in root.findall('.//{DAV:}response'):
+            href = unquote(response.find('{DAV:}href').text)
+            etag = response.find('.//oc:fileid', namespaces={'oc': 'http://owncloud.org/ns'}).text
+            nextcloud_filepath = href.replace(extra_path, '')
+            odoo_nc_record = NCFolder.search([('etag', '=', etag), ('username', '=', username)], limit=1)
+
+            is_folder = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}resourcetype/{DAV:}collection') is not None
+            contenttype = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}getcontenttype').text or ''
+
+            if is_folder:
+                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1]
+                values = {'name': nextcloud_folder, 'folder': True, 'etag': etag, 'username': username}
+            else:
+                values = {'name': nextcloud_filepath, 'file_type': contenttype.split('/')[-1], 'etag': etag,
+                          'username': username}
+
+            if odoo_nc_record:
+                odoo_nc_record.with_context(sync_nextcloud=True).write(values)
+            else:
+                NCFolder.with_context(sync_nextcloud=True).create(values)
+
+            synced_files.append(values)
+
+        return synced_files
+
+    def get_public_link(self, src_path, res_id, res_model):
+        company = self.env.user.company_id.sudo()
+        nextcloud_params = company.get_nextcloud_information(skip_check=True)
+        url = nextcloud_params.get('nextcloud_url')
+        username = nextcloud_params.get('nextcloud_username')
+        password = nextcloud_params.get('nextcloud_password')
+        origin_url = url + f'/remote.php/dav/files/{username}/'
+        if origin_url in src_path:
+            src_path = src_path.replace(origin_url, '')
+        src_share_name = src_path.split('/')[-1]
+        data = {
+            'path': src_path,
+            'shareType': 3,  # 3 = Public link
+            'permissions': 1,  # 1 = Read-only, adjust as needed
+            'name': f'{src_share_name}_{res_model}_{res_id}',  # Optional: Set a custom name for the link
+        }
+        share_api_url = f'{url}/ocs/v2.php/apps/files_sharing/api/v1/shares'
+        headers = {
+            'OCS-APIRequest': 'true',
+            'Accept': 'application/json',
+        }
+        response = requests.post(share_api_url, headers=headers, data=data, auth=(username, password))
+        if response.status_code == 200:
+            share_data = response.json().get('ocs', {}).get('data', {})
+            share_url = share_data.get('url')  # The public share link
+            _logger.info(f'Share link created: {share_url}')
+            return share_url
+        else:
+            _logger.error(f'Failed to create share link. Status code: {response.status_code}')
             return False

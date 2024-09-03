@@ -13,7 +13,7 @@
             <div t-if="!attachmentImage.attachment.nextcloud_attachment and attachmentImage.attachment.isNextCloudUploading"
                 class="o_AttachmentImage_action o_AttachmentImage_actionNextcloudUploading text-center" 
                 tabindex="0" aria-label="Uploading to Nextcloud" role="menuitem" title="Uploading to Nextcloud">
-                <i class="fa fa-refresh fa-spin fa-fw"></i>
+                <i class="fa fa-refresh fa-spin fa-fw"/>
                 <span class="sr-only">Loading...</span>
             </div>
             <div t-if="attachmentImage.attachment.nextcloud_attachment"
@@ -21,6 +21,12 @@
                 style="color: #0082c9; font-size: 16px; background: rgba(255, 255, 255, 0.5); border-radius: 20px;"
                 tabindex="0" aria-label="Uploaded to Nextcloud" role="menuitem" title="Uploaded to Nextcloud">
                 <i class="fa fa-check-circle"/>
+            </div>
+            <div t-if="attachmentImage.attachment.nextcloud_attachment"
+                 class="o_AttachmentImage_action o_AttachmentImage_actionPublicLink text-center"
+                tabindex="0" aria-label="Copy Public Link" role="menuitem" title="Copy Public Link"
+                t-on-click="attachmentImage.attachment.onClickPublicLink">
+                <i class="fa fa-link"/>
             </div>
         </xpath>
     </t>
@@ -36,7 +42,7 @@
                 </div>
                 <div t-if="attachmentCard.attachment.isNextCloudUploading" class="o_AttachmentCard_asideItem o_AttachmentCard_asideItemNextcloudUploading d-flex justify-content-center align-items-center" 
                     tabindex="0" aria-label="Uploading to Nextcloud" role="menuitem" title="Uploading to Nextcloud">
-                    <i class="fa fa-refresh fa-spin fa-fw"></i>
+                    <i class="fa fa-refresh fa-spin fa-fw"/>
                     <span class="sr-only">Loading...</span>
                 </div>
             </t>
@@ -46,6 +52,11 @@
                     style="color: #0082c9;"
                     tabindex="0" aria-label="Uploaded to Nextcloud" role="menuitem" title="Uploaded to Nextcloud">
                     <i class="fa fa-check-circle"/>
+                </div>
+                <div class="o_AttachmentCard_asideItem d-flex justify-content-center align-items-center o_AttachmentImage_actionPublicLink"
+                     tabindex="0" aria-label="Copy Public Link" role="menuitem" title="Copy Public Link"
+                     t-on-click="attachmentCard.attachment.onClickPublicLink">
+                    <i class="fa fa-link"/>
                 </div>
             </t>
         </xpath>
