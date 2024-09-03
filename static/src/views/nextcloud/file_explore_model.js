@@ -191,7 +191,7 @@ export class FileExploreModel extends Model {
         this.notify();
     }
 
-    _createFormDataNextcloud(objectPublic,nc_attachment_id) {
+    _createFormDataNextcloud(objectPublic,nc_attachment_id,nc_df_id) {
         const formData = new window.FormData();
         formData.append('csrf_token', core.csrf_token);
         if (nc_attachment_id) {
@@ -199,7 +199,11 @@ export class FileExploreModel extends Model {
         } else {
             formData.append('attachment_id', this.attachment_id);
         }
-        formData.append('folder_id', this.current_folder.id);
+        if (nc_df_id) {
+            formData.append('folder_id', nc_df_id);
+        } else {
+            formData.append('folder_id', this.current_folder.id);
+        }
         formData.append('res_id', this.origin_resid);
         formData.append('res_model', this.origin_resmodel);
         formData.append('nc_object_public', objectPublic)
@@ -522,11 +526,13 @@ export class FileExploreModel extends Model {
         var publicLink = false
         if (this.fileexplore_mode != 'open_folder'){
             try {
+                framework.blockUI();
                 const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
                     method: 'POST',
                     body: this._createFormDataNextcloud(objectKey)
                 });
                 publicLink = await response.json();
+                framework.unblockUI();
             } catch (e) {
                 framework.unblockUI();
                 if (e.name !== 'AbortError') {
@@ -535,14 +541,24 @@ export class FileExploreModel extends Model {
             }
         } else {
             if (identify_key[0] == 'file') {
+                framework.blockUI();
                 const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
                     method: 'POST',
-                    body: this._createFormDataNextcloud(false,objectKey)
+                    body: this._createFormDataNextcloud(false,objectKey,'false')
                 });
                 publicLink = await response.json();
+                framework.unblockUI();
+            } else if (identify_key[0] == 'folder') {
+                framework.blockUI();
+                const response = await this.env.browser.fetch('/nextcloud/attachment/getPublicLink', {
+                    method: 'POST',
+                    body: this._createFormDataNextcloud(false,this.attachment_id,objectKey)
+                });
+                publicLink = await response.json();
+                framework.unblockUI();
             }
         }
-        if (!publicLink) {
+        if (!publicLink['nc_public_link']) {
             this.env.services.action.doAction({
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
