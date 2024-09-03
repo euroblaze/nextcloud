@@ -81,7 +81,7 @@
                                             t-att-class="{ fe_fileexplorer_disabled: !model.feature.allowDownload}"
                                             title="Download File/Folder" tabindex="-1"/>
                                     <div class="fe_fileexplorer_folder_tool_separator"/>
-                                    <button class="fe_fileexplorer_folder_tool_upload"
+                                    <button class="fe_fileexplorer_document_folder_tool_upload"
                                             t-on-click="model.onUploadFolderClicked"
                                             t-if="model.fileexplore_mode == 'open_folder'"
                                             title="Upload Folder"
@@ -115,6 +115,12 @@
                                                                 <t t-esc="record.name"/>
                                                             </div>
                                                         </t>
+                                                        <div t-if="model.allowPublicLink"
+                                                             class="fe_fileexplorer_copy_link o_AttachmentImage_actionPublicLink" aria-label="Copy Public Link" title="Copy Public Link"
+                                                             style="position: absolute; top: 5px; right: 5px; cursor: pointer; padding: 3px; border-radius: 4px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;"
+                                                             t-on-click="model.onClickPublicLink">
+                                                            <i class="fa fa-link"/>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </t>
@@ -131,6 +137,11 @@
                                                         fe_fileexplorer_item_icon_ext_t"
                                                              t-att-data-ext="record.file_type or 'TXT'"/>
                                                         <div class="fe_fileexplorer_item_text"><t t-esc="record.folder_name"/></div>
+                                                        <div class="fe_fileexplorer_copy_link o_AttachmentImage_actionPublicLink" aria-label="Copy Public Link" title="Copy Public Link"
+                                                             style="position: absolute; top: 5px; right: 5px; cursor: pointer; padding: 3px; border-radius: 4px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;"
+                                                             t-on-click="model.onClickPublicLink">
+                                                            <i class="fa fa-link"/>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </t>

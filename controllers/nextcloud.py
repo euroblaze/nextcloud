@@ -128,3 +128,52 @@ class BinaryNextCloud(http.Controller):
             data=json.dumps(attachmentData),
             headers=[('Content-Type', 'application/json')]
         )
+
+    @http.route('/mail/attachment/getPublicLink', methods=['POST'], type='http', auth='public')
+    def generate_public_link_attachment(self, attachment_id, res_id, res_model, **kwargs):
+        results = {}
+        if attachment_id:
+            nc_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
+            attachment_share_path = nc_attachment_id.nextcloud_share_link
+            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
+                                                                                res_model)
+            results['nc_public_link'] = nc_share_link
+        return request.make_response(
+            data=json.dumps(results),
+            headers=[('Content-Type', 'application/json')]
+        )
+
+    @http.route('/nextcloud/attachment/getPublicLink', methods=['POST'], type='http', auth='public')
+    def generate_public_link_nextcloud_attachment(self, attachment_id, nc_object_public=False, folder_id=False, res_id=None, res_model=None, **kwargs):
+        results = {}
+        if nc_object_public != 'false':
+            nc_attachment_id = request.env['nextcloud.folder'].browse(int(nc_object_public))
+            attachment_share_path = nc_attachment_id.name
+            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
+                                                                                   res_model)
+            if nc_share_link:
+                results['nc_public_link'] = nc_share_link
+        if attachment_id and folder_id == 'false':
+            nc_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
+            attachment_share_path = nc_attachment_id.nextcloud_share_link
+            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
+                                                                                   res_model)
+            if nc_share_link:
+                results['nc_public_link'] = nc_share_link
+        if attachment_id and folder_id != 'false':
+            nc_parent_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
+            document_folder_id = request.env['document.folder'].browse(int(folder_id))
+            parent_nc_path = nc_parent_attachment_id.nextcloud_share_link
+            if parent_nc_path.endswith(document_folder_id.x_document_folder_path):
+                current_nc_path = parent_nc_path
+            else:
+                # Merge the two paths if necessary
+                current_nc_path = f'{parent_nc_path}/{document_folder_id.x_document_folder_path.split("/", 1)[-1]}'
+            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(current_nc_path, res_id,
+                                                                                   res_model)
+            if nc_share_link:
+                results['nc_public_link'] = nc_share_link
+        return request.make_response(
+            data=json.dumps(results),
+            headers=[('Content-Type', 'application/json')]
+        )

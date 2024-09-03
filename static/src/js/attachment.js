@@ -8,6 +8,8 @@ import {
 import { attr } from '@mail/model/model_field';
 import { clear, insert } from '@mail/model/model_field_command';
 import { FileExploreDialog } from "../views/nextcloud/file_explore_dialog";
+import { useEffect, useService } from "@web/core/utils/hooks";
+import { browser } from "@web/core/browser/browser";
 
 import core from 'web.core';
 
@@ -78,6 +80,7 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
         this._super(...arguments);
         // defined onClickUpload
         this.onClickUploadNextcloud = this.onClickUploadNextcloud.bind(this);
+        this.onClickPublicLink = this.onClickPublicLink.bind(this);
     },
 
     /**
@@ -124,6 +127,8 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
         const formData = new window.FormData();
         formData.append('csrf_token', core.csrf_token);
         formData.append('attachment_id', this.id);
+        formData.append('res_id', this.originThread.id);
+        formData.append('res_model', this.originThread.model)
         return formData;
     },
 
@@ -185,6 +190,29 @@ registerInstancePatchModel('mail.attachment', 'nextcloud/static/src/js/attachmen
             if (attachmentData.folder_download_id) {
                 this.folderDownload(attachmentData.folder_download_id)
             }
+        }
+    },
+
+    async onClickPublicLink(ev){
+        ev.stopPropagation()
+        const response = await this.env.browser.fetch('/mail/attachment/getPublicLink', {
+            method: 'POST',
+            body: this._createFormDataNextcloud()
+        });
+        const publicLink = await response.json();
+        if (!publicLink) {
+            this.env.services['notification'].notify({
+                type: 'danger',
+                message: "Get Public Link Failed",
+            });
+        } else {
+            browser.navigator.clipboard.writeText(
+                `${publicLink['nc_public_link']}`
+            );
+            this.env.services['notification'].notify({
+                message: "Copy public link successfully",
+                type: 'success',
+            });
         }
     }
 });

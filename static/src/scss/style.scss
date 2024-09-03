@@ -44,3 +44,20 @@
 .modal-content {
     width: 80%;
 }
+
+.o_AttachmentImage_actionPublicLink {
+    cursor: pointer;
+
+    &:not(.o-pretty):hover {
+        background-color: gray('400');
+    }
+
+    &.o-pretty {
+        color: white;
+        background-color: $o-brand-primary;
+
+        &:hover {
+            background-color: darken($o-brand-primary, 10%);
+        }
+    }
+}

@@ -68,6 +68,7 @@
 .fe_fileexplorer_wrap .fe_fileexplorer_folder_tool_new_folder::before { background-image: url('fileexplorer_sprites.png'); background-position: -24px -144px; }
 .fe_fileexplorer_wrap .fe_fileexplorer_folder_tool_new_file::before { background-image: url('fileexplorer_sprites.png'); background-position: -0px -144px; }
 .fe_fileexplorer_wrap .fe_fileexplorer_folder_tool_upload::before { background-image: url('fileexplorer_sprites.png'); background-position: -96px -144px; }
+.fe_fileexplorer_document_folder_tool_upload::before { background-image: url('document_folder_upload_nc.png');}
 .fe_fileexplorer_wrap .fe_fileexplorer_folder_tool_download::before { background-image: url('fileexplorer_sprites.png'); background-position: -96px -120px; }
 
 .fe_fileexplorer_wrap .fe_fileexplorer_folder_tool_copy::before { background-image: url('fileexplorer_sprites.png'); background-position: -24px -120px; }

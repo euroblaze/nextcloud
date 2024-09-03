@@ -165,3 +165,4 @@ class ResCompany(models.Model):
                         'username': username,
                         'file_type': contenttype.split('/')[-1]
                     })
+
