@@ -12,16 +12,22 @@ _logger = logging.getLogger(__name__)
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    nextcloud_url = fields.Char(string="Nextcloud URL", groups="base.group_system")
+    nextcloud_url = fields.Char(string="Nextcloud URL", groups="base.group_system", compute="_compute_get_nextcloud_info")
     nextcloud_folder_id = fields.Many2one("nextcloud.folder", string="Nextcloud Default Folder",
                                           groups="base.group_system")
     nextcloud_folder = fields.Char(string="Nextcloud Default Folder Name",
                                    related="nextcloud_folder_id.name", groups="base.group_system")
-    nextcloud_username = fields.Char(string="Nextcloud Username", groups="base.group_system")
-    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system")
+    nextcloud_username = fields.Char(string="Nextcloud Username", groups="base.group_system", compute="_compute_get_nextcloud_info")
+    nextcloud_password = fields.Char(string="Nextcloud Password", groups="base.group_system", compute="_compute_get_nextcloud_info")
     nextcloud_folder_mapping_ids = fields.One2many('nextcloud.folder.mapping', 'company_id',
                                                    'NextCloud Folder Mapping')
     nextcloud_last_sync = fields.Integer()
+
+    def _compute_get_nextcloud_info(self):
+        for rec in self:
+            rec['nextcloud_url'] = self.env["ir.config_parameter"].sudo().get_param("nextcloud.nextcloud_url", "")
+            rec['nextcloud_username'] = self.env["ir.config_parameter"].sudo().get_param("nextcloud.nextcloud_username", "")
+            rec['nextcloud_password'] = self.env["ir.config_parameter"].sudo().get_param("nextcloud.nextcloud_password", "")
 
     def get_nextcloud_information(self, res_model=False, res_id=False, skip_check=False):
         self.ensure_one()
@@ -165,4 +171,3 @@ class ResCompany(models.Model):
                         'username': username,
                         'file_type': contenttype.split('/')[-1]
                     })
-

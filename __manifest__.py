@@ -10,10 +10,11 @@
     'license': 'LGPL-3',
     'depends': ['base', 'account', 'mail'],
     'data': [
-        'views/res_company_views.xml',
+        # 'views/res_company_views.xml',
         'views/nextcloud_folder_views.xml',
         'views/ir_attachment_views.xml',
         'views/document_folder_view.xml',
+        'views/nextcloud_config_setting.xml',
         'wizard/select_nextcloud_folder_wizard_view.xml',
         'security/ir.model.access.csv',
     ],
