@@ -215,7 +215,8 @@ export class FileExploreModel extends Model {
         formData.append('csrf_token', core.csrf_token);
         formData.append('parent_attachment_folder_id', this.attachment_id);
         formData.append('current_folder_id', this.current_folder.id);
-
+        formData.append('res_id', this.origin_resid);
+        formData.append('res_model', this.origin_resmodel);
         for (let i = 0; i < files.length; i++) {
             // Use template literals to construct the key
             formData.append('ufiles_'+i, files[i], files[i].webkitRelativePath || files[i].name);
@@ -377,15 +378,18 @@ export class FileExploreModel extends Model {
                 body: this._createFormDataNextcloud()
             });
             const response_data = await response.json();
-
-            if (response_data.error) {
-                self.env.services['notification'].notify({
-                    type: 'danger',
-                    message: response_data.error,
-                });
-                return;
-            }
             framework.unblockUI();
+            if (response_data.error) {
+                return self.env.services.action.doAction({
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'type': 'danger',
+                        'message': response_data.error,
+                        'next': {'type': 'ir.actions.act_window_close'},
+                    }
+                });
+            }
             return self.env.services.action.doAction({
                 type: 'ir.actions.act_window_close',
                 infos: response_data,

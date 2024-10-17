@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_nextcloud" model="ir.ui.view">
+        <field name="name">res.config.settings.view.nextcloud</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="100"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="NextCloud"  string="NextCloud" data-key="nextcloud">
+                    <div id="nextcloud">
+                        <h2>NextCloud Configuration</h2>
+                        <div class="row mt16 o_settings_container" name="nextcloud_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box" id="nextcloud_key_setting">
+                                <div class="o_setting_right_pane">
+                                    <div>
+                                        <table>
+                                            <tr>
+                                                <td style="padding-right: 10px;"><label for="nextcloud_url" string="Nextcloud URL"/></td>
+                                                <td><field name="nextcloud_url" style="width:100%"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-right: 10px;"><label for="nextcloud_username" string="Nextcloud Username"/></td>
+                                                <td><field name="nextcloud_username" style="width:100%" options="{'no_create': True}"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-right: 10px;"><label for="nextcloud_password" string="Nextcloud Password"/></td>
+                                                <td><field name="nextcloud_password" style="width:100%" password="True"/></td>
+                                            </tr>
+                                        </table>
+                                        <button type="object" name="nextcloud_test_connection" string="Establish Nextcloud Connection" class="btn btn-primary"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_action_nextcloud" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_nextcloud"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'nextcloud'}</field>
+    </record>
+
+</odoo>

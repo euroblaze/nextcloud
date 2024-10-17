@@ -92,7 +92,8 @@ class DocumentFolderController(http.Controller):
         return '/'
 
     @http.route('/document/folder/uploadFileExistFolder', methods=['POST'], type='http', auth='public')
-    def document_folder_exist_upload_file(self, parent_attachment_folder_id, current_folder_id=False, **kwargs):
+    def document_folder_exist_upload_file(self, parent_attachment_folder_id, current_folder_id=False, res_id=False,
+                                          res_model=False, **kwargs):
 
         if not (parent_attachment_folder_id and current_folder_id):
             attachmentData = {'error': _("Missing attachment ID.")}
@@ -125,13 +126,14 @@ class DocumentFolderController(http.Controller):
                         file = request.env['ir.attachment'].create(vals)
                         if parent_attachment_folder.nextcloud_attachment:
                             company = request.env.company.sudo()
-                            nextcloud_params = company.get_nextcloud_information(res_model=False,res_id=False)
+                            nextcloud_params = company.get_nextcloud_information(res_model=res_model, res_id=res_id)
                             username = nextcloud_params.get('nextcloud_username')
                             password = nextcloud_params.get('nextcloud_password')
                             folder_mapping = nextcloud_params.get('folder_mapping')
                             url = nextcloud_params.get('nextcloud_url')
                             origin_url = f"{url}/remote.php/dav/files/{username}/"
-                            parent_nc_path = self.extract_path(origin_url, parent_attachment_folder.nextcloud_share_link)
+                            parent_nc_path = self.extract_path(origin_url,
+                                                               parent_attachment_folder.nextcloud_share_link)
                             if not parent_nc_path:
                                 parent_nc_path = origin_url + '/'
                             # Check if `b` is the last part of `a`
@@ -143,7 +145,9 @@ class DocumentFolderController(http.Controller):
                             nc_current_folder_id = request.env['nextcloud.folder'].search(
                                 [('name', '=', current_nc_path)], limit=1)
                             if nc_current_folder_id:
-                                file_nc = file.request_upload_file_nextcloud(nc_current_folder_id.id)
+                                file_nc = file.with_context(res_id=res_id,
+                                                            res_model=res_model).request_upload_file_nextcloud(
+                                    nc_current_folder_id.id)
                     except Exception as e:
                         _logger.error(f"Error creating file: {file_name}, Error: {e}")
                         return False
@@ -179,7 +183,8 @@ class DocumentFolderController(http.Controller):
                         'type': 'folder'
                     }
                     folder_id = request.env['ir.attachment'].create(folder_vals)
-                    upload_folder = upload_document_folder.x_child_folder_ids.filtered(lambda a: a.x_name == folder_name)[0]
+                    upload_folder = \
+                    upload_document_folder.x_child_folder_ids.filtered(lambda a: a.x_name == folder_name)[0]
                     if upload_folder:
                         folder_id['x_link_document_folder_id'] = upload_folder.id
                     company = request.env.company.sudo()
