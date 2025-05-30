@@ -5,6 +5,7 @@ import requests
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -41,16 +42,39 @@ class IrAttachments(models.Model):
     #             )
     #             logging.info("Delete NextCloud: %s Status %s " % (url, delete_file))
     #     return super().unlink()
+    def check_and_create_folder(self, folder_url, username, password):
+        # URL for the specific folder
+        result = False
+        response = requests.request("PROPFIND", folder_url, auth=(username, password))
+        if response.status_code == 404:
+            # Create the folder using MKCOL
+            create_response = requests.request("MKCOL", folder_url, auth=(username, password))
+            if create_response.status_code in [200, 201]:  # 201 is the typical response for MKCOL
+                _logger.info("Folder created successfully.")
+                result = True
+            else:
+                _logger.error(f"Failed to create folder. Status code: {create_response.status_code}")
+        elif response.status_code in [200, 207]:  # 207 is the Multi-Status response code for WebDAV
+            _logger.info("Folder already exists.")
+            result = True
+        else:
+            _logger.error(f"Failed to check folder. Status code: {response.status_code}")
+
+        return result
 
     def request_upload_file_nextcloud(self, folder_id=False):
         self.ensure_one()
         NextcloudEnv = self.env['nextcloud.folder']
         company = self.company_id.sudo()
-        nextcloud_params = company.get_nextcloud_information(
-            res_model=self.res_model, res_id=self.res_id)
-        if 'folder_mapping' not in nextcloud_params.keys():
+        if self.res_id and self.res_model:
+            res_id = self.res_id
+            res_model = self.res_model
+        else:
+            res_id = self._context.get('res_id', False)
             res_model = self._context.get('res_model', False)
-            res_id = int(self._context.get('res_id', 0))
+        nextcloud_params = company.get_nextcloud_information(
+            res_model=res_model, res_id=res_id)
+        if 'folder_mapping' not in nextcloud_params.keys():
             if res_id and res_model:
                 nextcloud_params = company.get_nextcloud_information(
                     res_model=res_model, res_id=res_id)
@@ -59,7 +83,7 @@ class IrAttachments(models.Model):
         password = nextcloud_params.get('nextcloud_password')
         folder_mapping = nextcloud_params.get('folder_mapping')
         origin_url = url + f'/remote.php/dav/files/{username}/'
-        path_arr = [self.name]
+        path_arr = []
         if not folder_id:
             folder = nextcloud_params.get('nextcloud_folder_id')
             folder_id = folder.id
@@ -67,7 +91,28 @@ class IrAttachments(models.Model):
             folder_id = int(folder_id)
             folder = NextcloudEnv.browse(folder_id).name
         if folder:
-            path_arr.insert(0, folder)
+            path_arr.append(folder)
+        if res_id and res_model:
+            model_name = res_model.replace('.', '_')
+            exist_folder_model = False
+            if model_name not in folder.split('/')[-2:]:
+                res_model_folder_url = origin_url + folder + f'/{model_name}'
+                res_model_folder = self.check_and_create_folder(res_model_folder_url, username, password)
+            else:
+                res_model_folder = True
+                exist_folder_model = True
+            if res_model_folder:
+                if str(res_id) != folder.split('/')[-1]:
+                    res_id_folder_url = origin_url + folder + f'/{model_name}/{res_id}'
+                    res_id_folder = self.check_and_create_folder(res_id_folder_url, username, password)
+                    if not exist_folder_model:
+                        path_arr = path_arr + [model_name, str(res_id)]
+                    else:
+                        path_arr.append(str(res_id))
+                else:
+                    res_id_folder = True
+
+        path_arr.append(self.name)
         file_path = '/'.join(path_arr)
         head = {'OCS-APIRequest': 'true'}
         exist, index = False, 1
@@ -103,7 +148,6 @@ class IrAttachments(models.Model):
         self.ensure_one()
         NextcloudEnv = self.env['nextcloud.folder']
         company = self.company_id.sudo()
-
         nextcloud_params = company.get_nextcloud_information(res_model=self.res_model, res_id=self.res_id)
         username = nextcloud_params.get('nextcloud_username')
         password = nextcloud_params.get('nextcloud_password')

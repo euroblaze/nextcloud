@@ -111,18 +111,6 @@ class BinaryNextCloud(http.Controller):
             attachmentData = attachment.request_upload_file_nextcloud(folder_id)
         else:
             attachmentData = attachment.send_request_create_folder_nextcloud(folder_id)
-        # COMMENT: use it when share file to public
-        # params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
-        # post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
-        # post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
-        # xml_data = post_share_link.content.decode("utf-8")
-        # root = ET.fromstring(xml_data)
-        # share_url = ""
-        # for node in root.iter('data'):
-        #     for elem in node.iter():
-        #         if not elem.tag == node.tag:
-        #             if elem.tag == 'url':
-        #                 share_url = elem.text
 
         return request.make_response(
             data=json.dumps(attachmentData),
