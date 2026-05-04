@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="nextcloud.Chatter" t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o-mail-Followers')]" position="before">
+            <button class="o-mail-Chatter-nextcloud btn btn-link text-action px-1 d-flex align-items-center"
+                    t-att-class="{ 'my-2': !props.compactHeight }"
+                    t-att-disabled="!props.threadId"
+                    title="Attach from Nextcloud"
+                    aria-label="Attach from Nextcloud"
+                    t-on-click="onClickBrowseNextcloud">
+                <i class="fa fa-cloud fa-lg" role="img"/>
+            </button>
+        </xpath>
+    </t>
+
+</templates>

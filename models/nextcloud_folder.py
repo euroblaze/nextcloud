@@ -1,11 +1,21 @@
-import base64
-import requests
-import logging
-import xml.etree.ElementTree as ET
-from urllib.parse import unquote
+"""Nextcloud folder mirror in Odoo.
 
-from odoo import _, fields, models, api
-from odoo.exceptions import ValidationError, AccessError
+Each `nextcloud.folder` is a row representing a remote path. Sync is
+triggered manually (settings or test-connection action) or via the
+`sync_for_company` API.
+
+V18 rewrite: WebDAV through `env['nextcloud.client']` (webdav4),
+real per-company config, no plaintext credentials in `ir.config_parameter`.
+The legacy `download_folder_from_nextcloud` chatter-integration helper
+is preserved with V18-safe references; the heavy `document.folder` flow
+stays gated on the chatter rewrite.
+"""
+import base64
+import logging
+from urllib.parse import unquote, urlparse
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -13,377 +23,220 @@ _logger = logging.getLogger(__name__)
 class NextCloudFolder(models.Model):
     _name = 'nextcloud.folder'
     _description = 'NextCloud Folder'
+    _order = 'folder desc, name'
 
-    name = fields.Char(string='Full Path', required=True)
-    folder_name = fields.Char(string='Folder/File Name',
-                              compute='_compute_parent_id', store=True)
-    etag = fields.Char(string='ETag', required=False)
-    company_id = fields.Many2one('res.company', required=True,
-                                 default=lambda self: self.env.company)
-    parent_id = fields.Many2one('nextcloud.folder', 'Parent Folder',
-                                compute='_compute_parent_id', store=True)
-    child_ids = fields.One2many('nextcloud.folder', 'parent_id', 'Childs')
+    name = fields.Char(string='Full Path', required=True, index=True)
+    folder_name = fields.Char(
+        string='Folder/File Name',
+        compute='_compute_parent_id', store=True,
+    )
+    etag = fields.Char(string='ETag')
+    company_id = fields.Many2one(
+        'res.company', required=True,
+        default=lambda self: self.env.company,
+    )
+    parent_id = fields.Many2one(
+        'nextcloud.folder', string='Parent Folder',
+        compute='_compute_parent_id', store=True,
+    )
+    child_ids = fields.One2many('nextcloud.folder', 'parent_id', string='Children')
     sequence = fields.Integer(default=10)
     folder = fields.Boolean()
     file_type = fields.Char()
-    username = fields.Char()
+    username = fields.Char(index=True)
     active = fields.Boolean(default=True)
     nextcloud_public_link = fields.Char(string="Nextcloud Public Link", readonly=True)
 
+    _sql_constraints = [
+        ('uniq_path_per_user',
+         'UNIQUE(name, username)',
+         'A NextCloud path must be unique per user.'),
+    ]
+
+    # ------------------------------------------------------------------
+    # Computes
+    # ------------------------------------------------------------------
+
     @api.depends('name')
     def _compute_parent_id(self):
-        company = self.env.user.company_id.sudo()
-        username = company.nextcloud_username
         for rec in self:
             parent_id, folder_name = False, False
+            username = rec.username or rec.company_id.sudo().nextcloud_username
             if rec.name == '/':
-                folder_name = rec.name
+                folder_name = '/'
             elif rec.name:
-                split_arr = rec.name.split('/')
-                if len(split_arr) > 1:
+                parts = rec.name.split('/')
+                if len(parts) > 1:
+                    parent_path = '/'.join(parts[:-1]) or '/'
                     parent = self.search([
-                        ('name', '=', '/'.join(split_arr[:-1])),
-                        ('username', '=', username)], limit=1)
+                        ('name', '=', parent_path),
+                        ('username', '=', username),
+                    ], limit=1)
                     if parent:
                         parent_id = parent.id
-                    folder_name = split_arr[-1]
+                    folder_name = parts[-1]
                 else:
                     folder_name = rec.name
-                    parent_id = self.search([('name', '=', '/'),
-                                             ('username', '=', username)], limit=1).id
+                    root = self.search([
+                        ('name', '=', '/'),
+                        ('username', '=', username),
+                    ], limit=1)
+                    parent_id = root.id if root else False
             rec.parent_id = parent_id
             rec.folder_name = folder_name
 
-    # @api.model_create_multi
-    # def create(self, vals_list):
-    #     files = super(NextCloudFolder, self).create(vals_list)
-    #     if not self._context.get('sync_nextcloud', False):
-    #         files.send_request_create_folder_nextcloud()
-    #     return files
+    # ------------------------------------------------------------------
+    # Public sync API
+    # ------------------------------------------------------------------
 
-    # def write(self, vals):
-    #     result = super(NextCloudFolder, self).write(vals)
-    #     if 'name' in vals and not self._context.get('sync_nextcloud', False):
-    #         self.send_request_create_folder_nextcloud()
-    #     return result
+    @api.model
+    def sync_for_company(self, company):
+        """Walk the NC tree for *company* and upsert nextcloud.folder rows."""
+        company = company.sudo()
+        client = self.env['nextcloud.client']
+        username = company.nextcloud_username
+        if not username:
+            raise UserError(_("Configure Nextcloud credentials first."))
+        existing = self.search([('username', '=', username)])
+        keep_etags = set()
+        synced = []
+        for entry in self._iter_remote_tree(client, company, '/'):
+            keep_etags.add(entry['etag'])
+            existing_rec = existing.filtered(lambda r: r.etag == entry['etag'])[:1]
+            if existing_rec:
+                existing_rec.with_context(sync_nextcloud=True).write(entry)
+            else:
+                self.with_context(sync_nextcloud=True).create({
+                    **entry,
+                    'username': username,
+                    'company_id': company.id,
+                })
+            synced.append(entry)
+        # Drop rows for paths that vanished server-side.
+        stale = existing.filtered(lambda r: r.etag and r.etag not in keep_etags)
+        if stale:
+            stale.unlink()
+        company.nextcloud_last_sync = fields.Datetime.now()
+        return synced
+
+    @api.model
+    def _iter_remote_tree(self, client, company, root_path):
+        """Yield {name, folder, etag, file_type} dicts for every entry."""
+        try:
+            entries = client.ls(root_path, company=company)
+        except Exception as exc:  # noqa: BLE001
+            _logger.error("Failed to list NC %s: %s", root_path, exc)
+            return
+        # webdav4.client.ls returns metadata dicts for each entry.
+        for entry in entries:
+            href = entry.get('name') or entry.get('href') or ''
+            href = unquote(urlparse(href).path) if '://' in href else unquote(href)
+            relative = self._strip_dav_prefix(href, company)
+            is_dir = entry.get('type') == 'directory' or entry.get('is_dir', False)
+            etag = entry.get('etag') or entry.get('e_tag') or ''
+            content_type = entry.get('content_type') or entry.get('mime_type') or ''
+            if is_dir:
+                yield {
+                    'name': relative or '/',
+                    'folder': True,
+                    'etag': etag,
+                }
+                # Recurse one level deeper. webdav4 ls is non-recursive.
+                if relative and relative != '/':
+                    yield from self._iter_remote_tree(client, company, relative)
+            else:
+                yield {
+                    'name': relative,
+                    'folder': False,
+                    'etag': etag,
+                    'file_type': content_type.split('/')[-1] if content_type else '',
+                }
+
+    @staticmethod
+    def _strip_dav_prefix(href, company):
+        prefix = f"/remote.php/dav/files/{company.nextcloud_username}/"
+        if href.startswith(prefix):
+            return href[len(prefix):].rstrip('/') or '/'
+        return href.rstrip('/') or '/'
+
+    # ------------------------------------------------------------------
+    # JS-RPC helpers (used by the file-picker dialog)
+    # ------------------------------------------------------------------
 
     @api.model
     def get_master_data(self, domain, **kwargs):
-        values = {}
-        res_model = kwargs.get('res_model', False)
-        res_id = kwargs.get('res_id', False)
-        company = self.env.user.company_id.sudo()
-        domain += [('username', '=', company.nextcloud_username)]
-        data = self.search_read(domain, fields=[], order="folder, id, parent_id, folder_name")
-        folder_data = self.search_read(domain + [('folder', '=', True)], fields=[],
-                                       order="id asc, parent_id, folder_name")
-        nextcloud_params = company.get_nextcloud_information(
-            res_model=res_model, res_id=res_id)
-        nextcloud_folder_id = nextcloud_params.get('nextcloud_folder_id')
-        if nextcloud_folder_id:
-            default_folder = nextcloud_folder_id.read()[0]
+        res_model = kwargs.get('res_model')
+        res_id = kwargs.get('res_id')
+        company = self.env.company.sudo()
+        username = company.nextcloud_username
+        domain = domain + [('username', '=', username)]
+        data = self.search_read(
+            domain, fields=[],
+            order="folder, id, parent_id, folder_name",
+        )
+        folder_data = self.search_read(
+            domain + [('folder', '=', True)], fields=[],
+            order="id asc, parent_id, folder_name",
+        )
+        nc_params = company.get_nextcloud_information(
+            res_model=res_model, res_id=res_id,
+        )
+        default_folder_record = nc_params.get('nextcloud_folder_id')
+        if default_folder_record:
+            default_folder = default_folder_record.read()[0]
         else:
-            default_folder = folder_data[0] if len(folder_data) > 1 else []
-        values.update({
+            default_folder = folder_data[0] if folder_data else []
+        return {
             'data': data,
             'folder_data': folder_data,
-            'default_folder': default_folder
-        })
+            'default_folder': default_folder,
+        }
 
-        return values
+    # ------------------------------------------------------------------
+    # File operations triggered from the chatter / attachment widget
+    # ------------------------------------------------------------------
 
     @api.model
     def download_file_from_nextcloud(self, files, res_model, res_id, **kwargs):
+        """Pull *files* from NC into ir.attachment records bound to
+        (res_model, res_id).
+        """
+        client = self.env['nextcloud.client']
+        attachments = self.env['ir.attachment']
         for file in files:
-            company_id = file.get('company_id')[0]
+            company_id = file.get('company_id')[0] if file.get('company_id') else self.env.company.id
+            company = self.env['res.company'].sudo().browse(company_id)
             filename = file['name']
-            nextcloud_params = self.env['res.company'].sudo().browse(company_id).get_nextcloud_information()
-            url = nextcloud_params.get('nextcloud_url')
-            username = nextcloud_params.get('nextcloud_username')
-            password = nextcloud_params.get('nextcloud_password')
-            _logger.info("======" + str(file))
-            download_url = url + f"/remote.php/dav/files/{username}/{filename}"
-            auth = (username, password)
-
-            response = requests.get(download_url, auth=auth)
-            if response.status_code == 200:
-                # File content is in response.text
-                values = {
-                    'name': filename,
-                    'nextcloud_attachment': True,
-                    'res_id': res_id,
-                    'res_model': res_model,
-                    'company_id': company_id,
-                    'nextcloud_share_link': download_url,
-                    'nextcloud_folder_id': file['id'],
-                    'datas': base64.b64encode(response.content)
-                }
-                attachment = self.env['ir.attachment'].create(values)
-                _logger.info(f"File {attachment.name} downloaded successfully.")
-            else:
-                _logger.error(f"Failed to download file. Status code: {response.status_code}")
-                print(response.text)
-
-    @api.model
-    def download_folder_from_nextcloud(self, folder, res_model, res_id, **kwargs):
-        folder = self.env['nextcloud.folder'].search([('id', '=', folder)])
-        company_id = self.env.user.company_id.sudo()
-        folder_name = folder['name']
-        path_parts = folder_name.split('/')
-        nextcloud_params = company_id.get_nextcloud_information()
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        _logger.info("====== Folder" + str(folder))
-        download_url = url + f"/remote.php/dav/files/{username}/{folder_name}"
-        payload = '''<?xml version="1.0" encoding="UTF-8"?>
-        <d:propfind xmlns:d="DAV:">
-        <d:prop xmlns:oc="http://owncloud.org/ns">
-            <d:resourcetype/>
-            <d:getcontenttype/>
-            <oc:fileid/>
-        </d:prop>
-        </d:propfind>'''
-        request_header = {
-            'OCS-APIRequest': 'true',
-            'Depth': '10000'
-        }
-        get_folder_response = requests.request("PROPFIND", download_url, headers=request_header,
-                                               data=payload, auth=(username, password))
-        xml_data = get_folder_response.content.decode("utf-8")
-        root = ET.fromstring(xml_data)
-        root_response = root.findall('.//{DAV:}response')
-        parent_root_response = root_response[0]
-        parent_folder_name = path_parts[-1]
-        parent_folder_vals = {
-            'name': parent_folder_name,
-            'res_id': int(res_id),
-            'res_model': res_model,
-            'x_is_folder': True,
-            'mimetype': 'document/folder',
-            'type': 'folder',
-            'nextcloud_attachment': True
-        }
-        channel_partner = self.env['mail.channel.partner']
-        try:
-            if channel_partner.env.user.share:
-                # Only generate the access token if absolutely necessary (= not for internal user).
-                parent_folder_vals['access_token'] = channel_partner.env['ir.attachment']._generate_access_token()
-            folder_id = self.env['ir.attachment'].create(parent_folder_vals)
-            folder_id._post_add_create()
-            folderData = {
-                'name': folder_id.name,
-                'id': folder_id.id,
-                'size': 0,
-                'mimetype': folder_id.mimetype
-            }
-            folder_document_id = channel_partner.env['document.folder'].create({
-                'x_name': folderData['name'],
-                'x_parent_folder_id': False,
-                'x_linked_attachment': folder_id.id,
-                'x_document_folder_path': folderData['name']
+            try:
+                content = client.download(filename, company=company)
+            except Exception as exc:  # noqa: BLE001
+                _logger.error("NC download failed for %s: %s", filename, exc)
+                continue
+            attachments |= self.env['ir.attachment'].create({
+                'name': filename.rsplit('/', 1)[-1],
+                'nextcloud_attachment': True,
+                'res_id': res_id,
+                'res_model': res_model,
+                'company_id': company_id,
+                'nextcloud_share_link': f"{company.nextcloud_url}"
+                                        f"/remote.php/dav/files/"
+                                        f"{company.nextcloud_username}/{filename}",
+                'nextcloud_folder_id': file['id'],
+                'datas': base64.b64encode(content),
             })
-            folder_id['x_link_document_folder_id'] = folder_document_id.id
-            ufiles_folder = {}
-            for response in root_response[1:]:
-                href = unquote(response.find('{DAV:}href').text)
-                if href[-1] != '/':
-                    file_download_url = url + href
-                    file_response = requests.get(file_download_url, auth=(username, password))
-                    if file_response.status_code != 200:
-                        ufiles_folder = {}
-                        break
-                    # file_href = href.get
-                    ufiles_folder[href.replace(
-                        f'/remote.php/dav/files/{username}/{folder_name[0:folder_name.index(path_parts[-1])]}',
-                        '')] = file_response
-                else:
-                    pass
-            self.generate_folder_hierarchy_nc(folder_document_id, ufiles_folder, int(res_id), res_model)
-            if not folder_id.datas:
-                self.env['document.folder'].sudo().document_folder_zip(folder_id.id)
-        except AccessError:
-            folderData = {'error': _("You are not allowed to upload an attachment here.")}
-
-    def create_file(self, parent_folder, ufile, file_path, file_name, original_folder_id, res_id, res_model):
-        try:
-            # Check if the file is a BytesIO object
-            # if isinstance(ufile.stream, io.BytesIO):
-            #     file_content = ufile.stream.read()  # Read the file content from the stream
-            # else:
-            file_content = ufile.content  # Read the file content
-
-            # Convert the file content to base64 for storage
-            file_base64 = base64.b64encode(file_content)
-
-            vals = {
-                'name': file_name,
-                'datas': file_base64,  # Store the base64-encoded content
-                'x_document_folder_id': parent_folder.id,
-                'x_original_folder_id': original_folder_id,
-                'x_document_folder_path': file_path,
-            }
-            return self.env['ir.attachment'].create(vals)
-        except Exception as e:
-            _logger.error(f"Error creating file: {file_name}, Error: {e}")
-            return False
-
-    def generate_folder_hierarchy_nc(self, parent_folder_id, files_list, res_id, res_model):
-        if not (parent_folder_id and files_list):
-            return False
-
-        try:
-            parent_folder_id['x_sequence_folder'] = 0
-            parent_folder_id['x_original_folder_id'] = parent_folder_id.id
-            parent_folder_id['x_res_id'] = res_id
-            parent_folder_id['x_res_model'] = res_model
-            for ufile_k, ufile_v in files_list.items():
-                f_path = ufile_k
-                path_items = f_path.split('/')
-                file_name = path_items.pop()  # Extract the file name
-                parent_folder = parent_folder_id
-
-                for sequence, item in enumerate(path_items[1:]):
-                    # Check if the folder already exists
-                    exist_folder = self.env['document.folder'].search([
-                        ('x_name', '=', item),
-                        ('x_sequence_folder', '=', sequence + 1),
-                        ('x_parent_folder_id', '=', parent_folder.id)
-                    ], limit=1)
-
-                    if not exist_folder:
-                        # Create a new folder if it doesn't exist
-                        document_subfolder = self.env['document.folder'].create({
-                            'x_name': item,
-                            'x_sequence_folder': sequence + 1,
-                            'x_parent_folder_id': parent_folder.id,
-                            'x_original_folder_id': parent_folder_id.id,
-                            'x_document_folder_path': parent_folder.x_document_folder_path + f'/{item}',
-                            'x_res_id': res_id,
-                            'x_res_model': res_model
-                        })
-                    else:
-                        document_subfolder = exist_folder
-
-                    # Update the parent folder reference for the next iteration
-                    parent_folder = document_subfolder
-
-                # Create the file in the final folder
-                self.create_file(parent_folder, ufile_v, ufile_k, file_name, parent_folder_id.id, res_id, res_model)
-        except Exception as e:
-            _logger.error(f"Error generating folder hierarchy: {e}")
-            return False
-
-    @api.model
-    def sync_nextcloud_folder(self):
-        company = self.env.user.company_id.sudo()
-        nextcloud_params = company.get_nextcloud_information(skip_check=True)
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        folder = nextcloud_params.get('nextcloud_folder')
-
-        if not url or not username or not password:
-            raise ValueError(_('NextCloud account is invalid! Please set up NextCloud account!'))
-
-        url += '/remote.php/dav/files/%s/' % username
-        existing_records = self.env['nextcloud.folder'].search([('username', '=', username)])
-        synced_files = self.send_request_get_folder(url, folder, username, password)
-
-        existing_etags = set(existing_records.mapped('etag'))
-        synced_etags = {file['etag'] for file in synced_files}
-
-        # Delete records that no longer exist in NextCloud
-        to_delete = existing_records.filtered(lambda rec: rec.etag not in synced_etags)
-        if to_delete:
-            to_delete.unlink()
-
-        return synced_files
-
-    @api.model
-    def send_request_get_folder(self, request_url, folder_path, username, password):
-        _logger.info("Sync NextCloud folder of %s to Odoo" % folder_path)
-        NCFolder = self.env['nextcloud.folder']
-        extra_path = '/remote.php/dav/files/%s/' % username
-        synced_files = []
-
-        payload = '''<?xml version="1.0" encoding="UTF-8"?>
-    <d:propfind xmlns:d="DAV:">
-    <d:prop xmlns:oc="http://owncloud.org/ns">
-        <d:resourcetype/>
-        <d:getcontenttype/>
-        <oc:fileid/>
-    </d:prop>
-    </d:propfind>'''
-
-        request_header = {
-            'OCS-APIRequest': 'true',
-            'Depth': 'infinity'
-        }
-
-        get_folder_response = requests.request("PROPFIND", request_url + folder_path, headers=request_header,
-                                               data=payload, auth=(username, password))
-
-        if get_folder_response.status_code != 207:  # Multi-Status (WebDAV; RFC 4918)
-            _logger.error(f"Error fetching Nextcloud folder: {get_folder_response.status_code}")
-            return []
-
-        # Parse the XML response content using ET.fromstring
-        xml_data = get_folder_response.content.decode("utf-8")
-        root = ET.fromstring(xml_data)
-
-        for response in root.findall('.//{DAV:}response'):
-            href = unquote(response.find('{DAV:}href').text)
-            etag = response.find('.//oc:fileid', namespaces={'oc': 'http://owncloud.org/ns'}).text
-            nextcloud_filepath = href.replace(extra_path, '')
-            odoo_nc_record = NCFolder.search([('etag', '=', etag), ('username', '=', username)], limit=1)
-
-            is_folder = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}resourcetype/{DAV:}collection') is not None
-            contenttype = response.find('{DAV:}propstat/{DAV:}prop/{DAV:}getcontenttype').text or ''
-
-            if is_folder:
-                nextcloud_folder = '/' if not nextcloud_filepath else nextcloud_filepath[:-1]
-                values = {'name': nextcloud_folder, 'folder': True, 'etag': etag, 'username': username}
-            else:
-                values = {'name': nextcloud_filepath, 'file_type': contenttype.split('/')[-1], 'etag': etag,
-                          'username': username}
-
-            if odoo_nc_record:
-                odoo_nc_record.with_context(sync_nextcloud=True).write(values)
-            else:
-                NCFolder.with_context(sync_nextcloud=True).create(values)
-
-            synced_files.append(values)
-
-        return synced_files
+        return attachments.ids
 
     def get_public_link(self, src_path, res_id, res_model):
-        company = self.env.user.company_id.sudo()
-        nextcloud_params = company.get_nextcloud_information(skip_check=True)
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        origin_url = url + f'/remote.php/dav/files/{username}/'
-        if origin_url in src_path:
-            src_path = src_path.replace(origin_url, '')
-        src_share_name = src_path.split('/')[-1]
-        data = {
-            'path': src_path,
-            'shareType': 3,  # 3 = Public link
-            'permissions': 1,  # 1 = Read-only, adjust as needed
-            'name': f'{src_share_name}_{res_model}_{res_id}',  # Optional: Set a custom name for the link
-        }
-        share_api_url = f'{url}/ocs/v2.php/apps/files_sharing/api/v1/shares'
-        headers = {
-            'OCS-APIRequest': 'true',
-            'Accept': 'application/json',
-        }
-        response = requests.post(share_api_url, headers=headers, data=data, auth=(username, password))
-        if response.status_code == 200:
-            share_data = response.json().get('ocs', {}).get('data', {})
-            share_url = share_data.get('url')  # The public share link
-            _logger.info(f'Share link created: {share_url}')
-            return share_url
-        else:
-            _logger.error(f'Failed to create share link. Status code: {response.status_code}')
-            return False
+        """Return (and cache) a public share link for *src_path*."""
+        self.ensure_one()
+        company = self.env.company.sudo()
+        client = self.env['nextcloud.client']
+        # Strip the dav prefix if a full URL was passed.
+        prefix = f"{company.nextcloud_url}/remote.php/dav/files/{company.nextcloud_username}/"
+        if src_path.startswith(prefix):
+            src_path = src_path[len(prefix):]
+        label = f"{src_path.rsplit('/', 1)[-1]}_{res_model}_{res_id}"
+        url = client.create_public_share(src_path, company=company, label=label)
+        if url and self.id:
+            self.write({'nextcloud_public_link': url})
+        return url

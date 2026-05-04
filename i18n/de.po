@@ -1,0 +1,560 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* nextcloud
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-30 08:38+0000\n"
+"PO-Revision-Date: 2026-04-30 08:38+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: nextcloud
+#: model:ir.model.constraint,message:nextcloud.constraint_nextcloud_folder_uniq_path_per_user
+msgid "A NextCloud path must be unique per user."
+msgstr "Ein Nextcloud-Pfad muss pro Benutzer eindeutig sein."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Actions"
+msgstr "Aktionen"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__active
+msgid "Active"
+msgstr "Aktiv"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "App Password"
+msgstr "App-Passwort"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_ir_attachment
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__attachment_id
+msgid "Attachment"
+msgstr "Anhang"
+
+#. module: nextcloud
+#: model:ir.model.fields,help:nextcloud.field_res_company__nextcloud_url
+#: model:ir.model.fields,help:nextcloud.field_res_config_settings__nextcloud_url
+msgid "Base URL of the Nextcloud server, e.g. https://nc.example.com"
+msgstr "Basis-URL des Nextcloud-Servers, z. B. https://nc.example.com"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "Base URL of your Nextcloud server"
+msgstr "Basis-URL Ihres Nextcloud-Servers"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.select_nextcloud_folder_wizard_view
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.nextcloud_folder_view_form
+msgid "Child Folders"
+msgstr "Unterordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__child_ids
+msgid "Children"
+msgstr "Untereinträge"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_res_company
+msgid "Companies"
+msgstr "Unternehmen"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__company_id
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__company_id
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__company_id
+msgid "Company"
+msgstr "Unternehmen"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_res_config_settings
+msgid "Config Settings"
+msgstr "Konfigurationseinstellungen"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_folder.py:0
+msgid "Configure Nextcloud credentials first."
+msgstr "Bitte zuerst die Nextcloud-Zugangsdaten konfigurieren."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.select_nextcloud_folder_wizard_view
+msgid "Confirm"
+msgstr "Bestätigen"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Connection"
+msgstr "Verbindung"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_client.py:0
+msgid "Connection Test Successful!"
+msgstr "Verbindungstest erfolgreich!"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_client.py:0
+msgid "Connection Test Unsuccessful: %s"
+msgstr "Verbindungstest fehlgeschlagen: %s"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__create_uid
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__create_uid
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__create_uid
+msgid "Created by"
+msgstr "Erstellt von"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__create_date
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__create_date
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__create_date
+msgid "Created on"
+msgstr "Erstellt am"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "Default Folder"
+msgstr "Standardordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__display_name
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__display_name
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__display_name
+msgid "Display Name"
+msgstr "Anzeigename"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__domain
+msgid "Domain"
+msgstr "Domain"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__etag
+msgid "ETag"
+msgstr "ETag"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__file_type
+msgid "File Type"
+msgstr "Dateityp"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.nextcloud_folder_view_search
+msgid "Files Only"
+msgstr "Nur Dateien"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__folder
+msgid "Folder"
+msgstr "Ordner"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Folder Mapping (per model)"
+msgstr "Ordnerzuordnung (pro Modell)"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__folder_name
+msgid "Folder/File Name"
+msgstr "Ordner-/Dateiname"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.nextcloud_folder_view_search
+msgid "Folders Only"
+msgstr "Nur Ordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__name
+msgid "Full Path"
+msgstr "Vollständiger Pfad"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__id
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__id
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__write_uid
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__write_uid
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Zuletzt aktualisiert von"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__write_date
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__write_date
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__write_date
+msgid "Last Updated on"
+msgstr "Zuletzt aktualisiert am"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__model_name
+msgid "Model"
+msgstr "Modell"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__name
+msgid "Name"
+msgstr "Name"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_nextcloud_folder
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__nextcloud_folder_id
+msgid "NextCloud Folder"
+msgstr "Nextcloud-Ordner"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_nextcloud_folder_mapping
+msgid "NextCloud Folder Mapping"
+msgstr "Nextcloud-Ordnerzuordnung"
+
+#. module: nextcloud
+#: model:ir.ui.menu,name:nextcloud.menu_nextcloud_root
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Nextcloud"
+msgstr "Nextcloud"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_password
+#: model:ir.model.fields,field_description:nextcloud.field_res_config_settings__nextcloud_password
+msgid "Nextcloud App-Password"
+msgstr "Nextcloud-App-Passwort"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_ir_attachment__nextcloud_attachment
+#: model:ir.model.fields,field_description:nextcloud.field_product_document__nextcloud_attachment
+#: model:ir.model.fields,field_description:nextcloud.field_quotation_document__nextcloud_attachment
+msgid "Nextcloud Attachment"
+msgstr "Nextcloud-Anhang"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_folder_id
+#: model:ir.model.fields,field_description:nextcloud.field_res_config_settings__nextcloud_folder_id
+msgid "Nextcloud Default Folder"
+msgstr "Nextcloud-Standardordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_folder
+msgid "Nextcloud Default Folder Name"
+msgstr "Name des Nextcloud-Standardordners"
+
+#. module: nextcloud
+#: model:ir.actions.act_window,name:nextcloud.nextcloud_file_folder_action
+#: model:ir.ui.menu,name:nextcloud.menu_nextcloud_file_folder
+msgid "Nextcloud Files/Folders"
+msgstr "Nextcloud-Dateien/Ordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_ir_attachment__nextcloud_folder_id
+#: model:ir.model.fields,field_description:nextcloud.field_product_document__nextcloud_folder_id
+#: model:ir.model.fields,field_description:nextcloud.field_quotation_document__nextcloud_folder_id
+#: model_terms:ir.ui.view,arch_db:nextcloud.nextcloud_folder_view_form
+msgid "Nextcloud Folder"
+msgstr "Nextcloud-Ordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_folder_mapping_ids
+msgid "Nextcloud Folder Mapping"
+msgstr "Nextcloud-Ordnerzuordnung"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.nextcloud_folder_view_list
+msgid "Nextcloud Folders"
+msgstr "Nextcloud-Ordner"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_last_sync
+msgid "Nextcloud Last Sync"
+msgstr "Letzte Nextcloud-Synchronisation"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__nextcloud_public_link
+msgid "Nextcloud Public Link"
+msgstr "Öffentlicher Nextcloud-Link"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_ir_attachment__nextcloud_share_link
+#: model:ir.model.fields,field_description:nextcloud.field_product_document__nextcloud_share_link
+#: model:ir.model.fields,field_description:nextcloud.field_quotation_document__nextcloud_share_link
+msgid "Nextcloud Share Link"
+msgstr "Nextcloud-Freigabelink"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_url
+#: model:ir.model.fields,field_description:nextcloud.field_res_config_settings__nextcloud_url
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "Nextcloud URL"
+msgstr "Nextcloud-URL"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_res_company__nextcloud_username
+#: model:ir.model.fields,field_description:nextcloud.field_res_config_settings__nextcloud_username
+msgid "Nextcloud Username"
+msgstr "Nextcloud-Benutzername"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_ir_attachment__nextcloud_view_link
+#: model:ir.model.fields,field_description:nextcloud.field_product_document__nextcloud_view_link
+#: model:ir.model.fields,field_description:nextcloud.field_quotation_document__nextcloud_view_link
+msgid "Nextcloud View Link"
+msgstr "Nextcloud-Anzeigelink"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_nextcloud_client
+msgid "Nextcloud WebDAV Client"
+msgstr "Nextcloud-WebDAV-Client"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_client.py:0
+msgid ""
+"Nextcloud is not configured for company %s. Set the URL, username and app-"
+"password in Settings → Companies → Nextcloud."
+msgstr ""
+"Nextcloud ist für das Unternehmen %s nicht konfiguriert. Bitte URL, "
+"Benutzername und App-Passwort unter Einstellungen → Unternehmen → "
+"Nextcloud hinterlegen."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/wizard/select_nextcloud_folder_wizard.py:0
+msgid "No attachment to upload."
+msgstr "Kein Anhang zum Hochladen."
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__parent_id
+msgid "Parent Folder"
+msgstr "Übergeordneter Ordner"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/res_company.py:0
+msgid "Please synchronize Nextcloud folder!"
+msgstr "Bitte Nextcloud-Ordner synchronisieren!"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Re-sync Folders"
+msgstr "Ordner neu synchronisieren"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__res_model
+msgid "Resource Model"
+msgstr "Ressourcenmodell"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.select_nextcloud_folder_wizard_view
+msgid "Select Nextcloud Folder"
+msgstr "Nextcloud-Ordner auswählen"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__sequence
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__sequence
+msgid "Sequence"
+msgstr "Reihenfolge"
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_select_nextcloud_folder_wizard__folder_id
+msgid "Target Folder"
+msgstr "Zielordner"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "Test Connection"
+msgstr "Verbindung testen"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Test Connection & Sync"
+msgstr "Verbindung testen & synchronisieren"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_client.py:0
+msgid ""
+"The Python package `webdav4` is required by the Nextcloud module. Install it"
+" with `pip install webdav4`."
+msgstr ""
+"Das Python-Paket `webdav4` wird vom Nextcloud-Modul benötigt. Installation "
+"mit `pip install webdav4`."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "Use a Nextcloud app-password (Settings → Security)."
+msgstr "Verwenden Sie ein Nextcloud-App-Passwort (Einstellungen → Sicherheit)."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid ""
+"Use an app-password (Nextcloud Settings → Security → 'Devices & sessions')."
+msgstr ""
+"Verwenden Sie ein App-Passwort (Nextcloud Einstellungen → Sicherheit → "
+"„Geräte & Sitzungen“)."
+
+#. module: nextcloud
+#: model:ir.model.fields,help:nextcloud.field_res_company__nextcloud_password
+#: model:ir.model.fields,help:nextcloud.field_res_config_settings__nextcloud_password
+msgid ""
+"Use an app-password generated under Nextcloud → Settings → Security → "
+"'Devices & sessions'. Never store the user's main password here."
+msgstr ""
+"Verwenden Sie ein unter Nextcloud → Einstellungen → Sicherheit → „Geräte & "
+"Sitzungen“ erzeugtes App-Passwort. Speichern Sie hier niemals das "
+"Hauptpasswort des Benutzers."
+
+#. module: nextcloud
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder__username
+#: model:ir.model.fields,field_description:nextcloud.field_nextcloud_folder_mapping__username
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+msgid "Username"
+msgstr "Benutzername"
+
+#. module: nextcloud
+#: model:ir.model,name:nextcloud.model_select_nextcloud_folder_wizard
+msgid "Wizard select folder Nextcloud upload"
+msgstr "Assistent: Nextcloud-Ordner für Upload auswählen"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/nextcloud_client.py:0
+msgid "`requests` is required for share creation."
+msgstr "`requests` wird für die Erstellung von Freigaben benötigt."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.res_config_settings_view_nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_res_company_form_inherit_nextcloud
+msgid "https://nc.example.com"
+msgstr "https://nc.example.com"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.xml:0
+msgid "Attach"
+msgstr "Anhängen"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/chatter/chatter_patch.xml:0
+msgid "Attach from Nextcloud"
+msgstr "Von Nextcloud anhängen"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.js:0
+msgid "Attached %s from Nextcloud."
+msgstr "%s aus Nextcloud angehängt."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "Attachment %s has no payload to upload."
+msgstr "Anhang %s hat keinen Inhalt zum Hochladen."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "Could not create a public share link on Nextcloud."
+msgstr "Es konnte kein öffentlicher Freigabelink in Nextcloud erstellt werden."
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.js:0
+msgid "Could not load Nextcloud tree."
+msgstr "Nextcloud-Verzeichnisbaum konnte nicht geladen werden."
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_attachment_form_inherit_nextcloud
+msgid "Create Public Link"
+msgstr "Öffentlichen Link erstellen"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.xml:0
+msgid "Empty folder."
+msgstr "Leerer Ordner."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "Failed to fetch %s from Nextcloud: %s"
+msgstr "%s konnte nicht aus Nextcloud abgerufen werden: %s"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.js:0
+msgid "Nextcloud tree synchronised."
+msgstr "Nextcloud-Verzeichnisbaum synchronisiert."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "No Nextcloud path supplied."
+msgstr "Kein Nextcloud-Pfad angegeben."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "Public link created"
+msgstr "Öffentlicher Link erstellt"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.xml:0
+msgid "Sync"
+msgstr "Synchronisieren"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.js:0
+msgid "Sync failed."
+msgstr "Synchronisation fehlgeschlagen."
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/models/ir_attachments.py:0
+msgid "This attachment is not on Nextcloud. Upload it first."
+msgstr "Dieser Anhang ist nicht in Nextcloud. Bitte zuerst hochladen."
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.xml:0
+msgid "Type"
+msgstr "Typ"
+
+#. module: nextcloud
+#: model_terms:ir.ui.view,arch_db:nextcloud.view_attachment_form_inherit_nextcloud
+msgid "Upload to Nextcloud"
+msgstr "Nach Nextcloud hochladen"
+
+#. module: nextcloud
+#. odoo-javascript
+#: code:addons/nextcloud/static/src/components/browse_dialog/browse_dialog.xml:0
+msgid "folder"
+msgstr "Ordner"
+
+#. module: nextcloud
+#. odoo-python
+#: code:addons/nextcloud/wizard/select_nextcloud_folder_wizard.py:0
+msgid "No attachment to upload."
+msgstr "Kein Anhang zum Hochladen vorhanden."

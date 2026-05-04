@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="nextcloud_folder_view_form" model="ir.ui.view">
         <field name="name">nextcloud.folder.view.form</field>
@@ -6,42 +7,73 @@
             <form string="Nextcloud Folder">
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="folder_name"/>
-                        <field name="parent_id" options="{'no_create': True,
-                        'no_create_edit': True,
-                        'no_quick_create': True}"/>
-                        <field name="company_id" invisible="1"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="folder_name"/>
+                            <field name="folder"/>
+                            <field name="file_type" invisible="folder"/>
+                        </group>
+                        <group>
+                            <field name="parent_id"
+                                   options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}"/>
+                            <field name="username"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="nextcloud_public_link"/>
+                        </group>
                     </group>
-                    <group string="Child Folders">
-                        <field name="child_ids" readonly="1"/>
+                    <group string="Child Folders" invisible="not folder">
+                        <field name="child_ids" readonly="1">
+                            <list>
+                                <field name="folder_name"/>
+                                <field name="folder"/>
+                                <field name="file_type"/>
+                            </list>
+                        </field>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <record id="nextcloud_folder_view_tree" model="ir.ui.view">
-        <field name="name">nextcloud.folderview.tree</field>
+    <record id="nextcloud_folder_view_list" model="ir.ui.view">
+        <field name="name">nextcloud.folder.view.list</field>
         <field name="model">nextcloud.folder</field>
         <field name="arch" type="xml">
-            <tree string="Nextcloud Folder">
+            <list string="Nextcloud Folders">
                 <field name="name"/>
-                <!-- <field name="parent_id"/> -->
-            </tree>
+                <field name="folder"/>
+                <field name="file_type"/>
+                <field name="username"/>
+            </list>
         </field>
     </record>
 
+    <record id="nextcloud_folder_view_search" model="ir.ui.view">
+        <field name="name">nextcloud.folder.view.search</field>
+        <field name="model">nextcloud.folder</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="username"/>
+                <filter name="folders" string="Folders Only" domain="[('folder', '=', True)]"/>
+                <filter name="files" string="Files Only" domain="[('folder', '=', False)]"/>
+            </search>
+        </field>
+    </record>
 
     <record id="nextcloud_file_folder_action" model="ir.actions.act_window">
         <field name="name">Nextcloud Files/Folders</field>
         <field name="res_model">nextcloud.folder</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="nextcloud_folder_view_search"/>
     </record>
 
+    <menuitem id="menu_nextcloud_root"
+              name="Nextcloud"
+              sequence="99"
+              parent="base.menu_administration"/>
     <menuitem id="menu_nextcloud_file_folder"
-        action="nextcloud_file_folder_action"
-        sequence="99"
-        parent="base.menu_custom" name="Nextcloud Files/Folders"/>
-
+              action="nextcloud_file_folder_action"
+              sequence="10"
+              parent="menu_nextcloud_root"/>
 </odoo>

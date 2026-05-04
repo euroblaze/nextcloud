@@ -1,0 +1,23 @@
+.o_nc_browse {
+    min-height: 320px;
+
+    .o_nc_browse_header .breadcrumb {
+        background: transparent;
+        padding: 0;
+    }
+
+    .o_nc_browse_table {
+        tr.o_nc_folder a {
+            color: var(--bs-body-color);
+            text-decoration: none;
+
+            &:hover {
+                color: var(--bs-primary);
+                text-decoration: underline;
+            }
+        }
+        tr.o_nc_file td {
+            vertical-align: middle;
+        }
+    }
+}

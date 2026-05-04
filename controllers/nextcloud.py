@@ -1,179 +1,78 @@
-import functools
-import logging
-import json
-import xml.etree.ElementTree as ET
-import requests
-import werkzeug
-import werkzeug.exceptions
-import werkzeug.utils
-import werkzeug.wrappers
-import werkzeug.wsgi
+"""V18 JSON-RPC endpoints for the Nextcloud chatter integration.
 
-from odoo import http, _
-from odoo.http import request, serialize_exception as _serialize_exception
+All endpoints `auth='user'` (no public access) and `type='json'`
+(automatic CSRF + JSON serialisation).
+"""
+import logging
+
+from odoo import http
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
-CONTENT_MAXAGE = http.STATIC_CACHE_LONG  # menus, translations, static qweb
 
-DBNAME_PATTERN = '^[a-zA-Z0-9][a-zA-Z0-9_.-]+$'
+class NextcloudController(http.Controller):
 
-COMMENT_PATTERN = r'Modified by [\s\w\-.]+ from [\s\w\-.]+'
+    @http.route('/nextcloud/folder/tree', type='json', auth='user')
+    def folder_tree(self, only_folders=False):
+        """Return the cached `nextcloud.folder` tree for the current user's
+        company. Used by the Browse-NC dialog.
+        """
+        company = request.env.company.sudo()
+        username = company.nextcloud_username
+        domain = [('username', '=', username)]
+        if only_folders:
+            domain.append(('folder', '=', True))
+        rows = request.env['nextcloud.folder'].sudo().search_read(
+            domain,
+            fields=['id', 'name', 'folder_name', 'parent_id', 'folder', 'file_type'],
+            order='folder desc, name asc',
+        )
+        return {
+            'rows': rows,
+            'default_folder_id': company.nextcloud_folder_id.id or False,
+            'username': username,
+        }
 
+    @http.route('/nextcloud/folder/sync', type='json', auth='user')
+    def folder_sync(self):
+        """Trigger a fresh PROPFIND-based sync."""
+        request.env.company.sudo().sync_nextcloud_folder()
+        return {'ok': True}
 
-def clean(name):
-    return name.replace('\x3c', '')
-
-def serialize_exception(f):
-    @functools.wraps(f)
-    def wrap(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            _logger.exception("An exception occurred during an http request")
-            se = _serialize_exception(e)
-            error = {
-                'code': 200,
-                'message': "Odoo Server Error",
-                'data': se
-            }
-            return werkzeug.exceptions.InternalServerError(json.dumps(error))
-
-    return wrap
-
-
-class BinaryNextCloud(http.Controller):
-
-    @http.route(['/web/binary/upload_attachment_nextcloud/<string:res_model>/<string:res_id>'],
-                type='http', auth="user")
-    @serialize_exception
-    def upload_attachment_nextcloud(self, res_id=None, res_model=None):
-        if not res_id or not res_model:
-            return json.dumps({})
-        record = request.env[res_model].browse(int(res_id))
-        files = request.httprequest.files.getlist('ufile')
-        Model = request.env['ir.attachment']
-        # Check record has field company_id or not
-        company = 'company_id' in record and record.company_id or request.env.company
-        nextcloud_params = company.sudo().get_nextcloud_information()
-        url = nextcloud_params.get('nextcloud_url')
-        username = nextcloud_params.get('nextcloud_username')
-        password = nextcloud_params.get('nextcloud_password')
-        folder = nextcloud_params.get('nextcloud_folder')
-        head = {'OCS-APIRequest': 'true'}
-        for ufile in files:
-            filename = ufile.filename
-            mydata = ufile.read()
-            exist, index = False, 1
-            path_arr = [filename]
-            if folder:
-                path_arr.insert(0, folder)
-            file_path = '/'.join(path_arr)
-            while not exist:
-                get_url = url + f'/remote.php/dav/files/{username}/{file_path}'
-                get_call = requests.get(get_url, headers=head, auth=(username, password))
-                if get_call.status_code == 200:
-                    file_path = '(%s).'.join(file_path.rsplit('.', 1)) % str(index)
-                    index += 1
-                else:
-                    exist = True
-            put_url = url + f'/remote.php/dav/files/{username}/{file_path}'
-            requests.put(put_url, headers=head, auth=(username, password), data=mydata)
-            params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
-            post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
-            post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
-            xml_data = post_share_link.content.decode("utf-8")
-            root = ET.fromstring(xml_data)
-            share_url = ""
-            for node in root.iter('data'):
-                for elem in node.iter():
-                    if not elem.tag == node.tag:
-                        if elem.tag == 'url':
-                            share_url = elem.text
-            values = {
-                'name': filename,
-                'nextcloud_attachment': True,
-                'nextcloud_share_link': share_url,
-                'nextcloud_view_link': share_url,
-                'res_id': res_id,
-                'res_model': res_model,
-                'company_id': company.id
-            }
-            attachment = Model.create(values)
-            attachment._post_add_create()
-
-    @http.route('/mail/attachment/uploadnextcloud', methods=['POST'], type='http', auth='public')
-    def mail_attachment_upload(self, attachment_id, folder_id=False, **kwargs):
+    @http.route('/nextcloud/attachment/upload_to_nc', type='json', auth='user')
+    def upload_attachment_to_nc(self, attachment_id, folder_id=False, clear_local=False):
+        """Push an existing ir.attachment up to NC."""
         attachment = request.env['ir.attachment'].browse(int(attachment_id))
-        if not attachment:
-            attachmentData = {'error': _("Missing attachment ID.")}
-        if not attachment.x_is_folder:
-            attachmentData = attachment.request_upload_file_nextcloud(folder_id)
-        else:
-            attachmentData = attachment.send_request_create_folder_nextcloud(folder_id)
-        # COMMENT: use it when share file to public
-        # params = {'shareType': 3, 'publicUpload': True, 'path': file_path}
-        # post_url = url + '/ocs/v2.php/apps/files_sharing/api/v1/shares'
-        # post_share_link = requests.post(url=post_url, params=params, headers=head, auth=(username, password))
-        # xml_data = post_share_link.content.decode("utf-8")
-        # root = ET.fromstring(xml_data)
-        # share_url = ""
-        # for node in root.iter('data'):
-        #     for elem in node.iter():
-        #         if not elem.tag == node.tag:
-        #             if elem.tag == 'url':
-        #                 share_url = elem.text
-
-        return request.make_response(
-            data=json.dumps(attachmentData),
-            headers=[('Content-Type', 'application/json')]
+        if not attachment.exists():
+            return {'error': "Unknown attachment."}
+        attachment.check('write')
+        return attachment.action_upload_to_nextcloud(
+            folder_id=folder_id, clear_local=clear_local,
         )
 
-    @http.route('/mail/attachment/getPublicLink', methods=['POST'], type='http', auth='public')
-    def generate_public_link_attachment(self, attachment_id, res_id, res_model, **kwargs):
-        results = {}
-        if attachment_id:
-            nc_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
-            attachment_share_path = nc_attachment_id.nextcloud_share_link
-            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
-                                                                                res_model)
-            results['nc_public_link'] = nc_share_link
-        return request.make_response(
-            data=json.dumps(results),
-            headers=[('Content-Type', 'application/json')]
+    @http.route('/nextcloud/attachment/from_nc', type='json', auth='user')
+    def attachment_from_nc(self, nc_path, res_model, res_id):
+        """Create an ir.attachment from a Nextcloud file path,
+        bound to (res_model, res_id).
+        """
+        if not (nc_path and res_model):
+            return {'error': "nc_path and res_model are required."}
+        attachment = request.env['ir.attachment'].create_from_nextcloud_path(
+            nc_path, res_model, res_id,
         )
+        return {
+            'attachment_id': attachment.id,
+            'name': attachment.name,
+            'mimetype': attachment.mimetype,
+            'share_link': attachment.nextcloud_share_link,
+        }
 
-    @http.route('/nextcloud/attachment/getPublicLink', methods=['POST'], type='http', auth='public')
-    def generate_public_link_nextcloud_attachment(self, attachment_id, nc_object_public=False, folder_id=False, res_id=None, res_model=None, **kwargs):
-        results = {}
-        if nc_object_public != 'false':
-            nc_attachment_id = request.env['nextcloud.folder'].browse(int(nc_object_public))
-            attachment_share_path = nc_attachment_id.name
-            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
-                                                                                   res_model)
-            if nc_share_link:
-                results['nc_public_link'] = nc_share_link
-        if attachment_id and folder_id == 'false':
-            nc_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
-            attachment_share_path = nc_attachment_id.nextcloud_share_link
-            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(attachment_share_path, res_id,
-                                                                                   res_model)
-            if nc_share_link:
-                results['nc_public_link'] = nc_share_link
-        if attachment_id and folder_id != 'false':
-            nc_parent_attachment_id = request.env['ir.attachment'].browse(int(attachment_id))
-            document_folder_id = request.env['document.folder'].browse(int(folder_id))
-            parent_nc_path = nc_parent_attachment_id.nextcloud_share_link
-            if parent_nc_path.endswith(document_folder_id.x_document_folder_path):
-                current_nc_path = parent_nc_path
-            else:
-                # Merge the two paths if necessary
-                current_nc_path = f'{parent_nc_path}/{document_folder_id.x_document_folder_path.split("/", 1)[-1]}'
-            nc_share_link = request.env['nextcloud.folder'].sudo().get_public_link(current_nc_path, res_id,
-                                                                                   res_model)
-            if nc_share_link:
-                results['nc_public_link'] = nc_share_link
-        return request.make_response(
-            data=json.dumps(results),
-            headers=[('Content-Type', 'application/json')]
-        )
+    @http.route('/nextcloud/folder/public_share', type='json', auth='user')
+    def folder_public_share(self, folder_id):
+        """Generate a public share link for a `nextcloud.folder` row."""
+        folder = request.env['nextcloud.folder'].browse(int(folder_id))
+        if not folder.exists():
+            return {'error': "Unknown folder."}
+        url = folder.get_public_link(folder.name, 0, 'nextcloud.folder')
+        return {'public_link': url or False}

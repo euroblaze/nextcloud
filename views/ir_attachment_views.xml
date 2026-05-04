@@ -1,21 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-
-    <record id="view_attachment_form" model="ir.ui.view">
+    <record id="view_attachment_form_inherit_nextcloud" model="ir.ui.view">
+        <field name="name">ir.attachment.form.inherit.nextcloud</field>
         <field name="model">ir.attachment</field>
         <field name="inherit_id" ref="base.view_attachment_form"/>
         <field name="arch" type="xml">
-            <xpath expr='//field[@name="type"]' position="after">
-                <field name="x_document_folder_id" attrs="{'invisible': [('type', '=', 'folder')]}"/>
-                <field name="x_link_document_folder_id" attrs="{'invisible': [('type', '!=', 'folder')]}"/>
+            <xpath expr='//sheet' position="before">
+                <header>
+                    <button name="action_upload_to_nextcloud" type="object"
+                            string="Upload to Nextcloud" class="btn-primary"
+                            invisible="nextcloud_attachment or not raw"/>
+                    <button name="action_create_public_share" type="object"
+                            string="Create Public Link" class="btn-secondary"
+                            invisible="not nextcloud_attachment"/>
+                </header>
             </xpath>
             <xpath expr='//field[@name="mimetype"]' position="after">
-                <field name="nextcloud_attachment" attrs="{'invisible': [('nextcloud_attachment', '=', False)]}"/>
+                <field name="nextcloud_attachment" invisible="not nextcloud_attachment"/>
                 <field name="nextcloud_view_link" widget="url"
-                       attrs="{'invisible': [('nextcloud_attachment', '=', False)]}"/>
+                       invisible="not nextcloud_attachment"/>
                 <field name="nextcloud_share_link" widget="url"
-                       attrs="{'invisible': [('nextcloud_attachment', '=', False)]}"/>
+                       invisible="not nextcloud_attachment"/>
+                <field name="nextcloud_folder_id" readonly="1"
+                       invisible="not nextcloud_attachment"/>
             </xpath>
         </field>
     </record>
-
 </odoo>

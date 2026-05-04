@@ -7,47 +7,35 @@
         <field name="priority" eval="100"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="NextCloud"  string="NextCloud" data-key="nextcloud">
-                    <div id="nextcloud">
-                        <h2>NextCloud Configuration</h2>
-                        <div class="row mt16 o_settings_container" name="nextcloud_settings_container">
-                            <div class="col-12 col-lg-6 o_setting_box" id="nextcloud_key_setting">
-                                <div class="o_setting_right_pane">
-                                    <div>
-                                        <table>
-                                            <tr>
-                                                <td style="padding-right: 10px;"><label for="nextcloud_url" string="Nextcloud URL"/></td>
-                                                <td><field name="nextcloud_url" style="width:100%"/></td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-right: 10px;"><label for="nextcloud_username" string="Nextcloud Username"/></td>
-                                                <td><field name="nextcloud_username" style="width:100%" options="{'no_create': True}"/></td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding-right: 10px;"><label for="nextcloud_password" string="Nextcloud Password"/></td>
-                                                <td><field name="nextcloud_password" style="width:100%" password="True"/></td>
-                                            </tr>
-                                        </table>
-                                        <button type="object" name="nextcloud_test_connection" string="Establish Nextcloud Connection" class="btn btn-primary"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <xpath expr="//form" position="inside">
+                <app data-string="Nextcloud" string="Nextcloud" name="nextcloud"
+                     logo="/nextcloud/static/description/icon.png">
+                    <block title="Connection" name="nextcloud_connection_setting_container">
+                        <setting id="nextcloud_url_setting" string="Nextcloud URL"
+                                 help="Base URL of your Nextcloud server">
+                            <field name="nextcloud_url" placeholder="https://nc.example.com"/>
+                        </setting>
+                        <setting id="nextcloud_username_setting" string="Username">
+                            <field name="nextcloud_username"/>
+                        </setting>
+                        <setting id="nextcloud_password_setting" string="App Password"
+                                 help="Use an app-password (Nextcloud Settings → Security → 'Devices &amp; sessions').">
+                            <field name="nextcloud_password" password="True"/>
+                        </setting>
+                        <setting id="nextcloud_default_folder_setting" string="Default Folder">
+                            <field name="nextcloud_folder_id"
+                                   options="{'no_create': True, 'no_quick_create': True}"
+                                   domain="[('folder', '=', True)]"/>
+                        </setting>
+                        <setting id="nextcloud_test_connection_setting" string="Test Connection">
+                            <button type="object" name="nextcloud_test_connection"
+                                    string="Test Connection &amp; Sync"
+                                    class="btn-primary"/>
+                        </setting>
+                    </block>
+                </app>
             </xpath>
         </field>
-    </record>
-
-    <record id="res_config_settings_action_nextcloud" model="ir.actions.act_window">
-        <field name="name">Settings</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">res.config.settings</field>
-        <field name="view_id" ref="res_config_settings_view_nextcloud"/>
-        <field name="view_mode">form</field>
-        <field name="target">inline</field>
-        <field name="context">{'module' : 'nextcloud'}</field>
     </record>
 
 </odoo>

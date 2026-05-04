@@ -1,5 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_nextcloud_folder_mapping,access.nextcloud.folder.mapping,model_nextcloud_folder_mapping,base.group_user,1,1,1,1
-access_nextcloud_folder,access.nextcloud.folder,model_nextcloud_folder,base.group_user,1,1,1,1
+access_nextcloud_folder_user,access.nextcloud.folder.user,model_nextcloud_folder,base.group_user,1,0,0,0
+access_nextcloud_folder_admin,access.nextcloud.folder.admin,model_nextcloud_folder,base.group_system,1,1,1,1
+access_nextcloud_folder_mapping_user,access.nextcloud.folder.mapping.user,model_nextcloud_folder_mapping,base.group_user,1,0,0,0
+access_nextcloud_folder_mapping_admin,access.nextcloud.folder.mapping.admin,model_nextcloud_folder_mapping,base.group_system,1,1,1,1
 access_select_nextcloud_folder_wizard,access.select.nextcloud.folder.wizard,model_select_nextcloud_folder_wizard,base.group_user,1,1,1,1
-access_document_folder,access_document_folder,model_document_folder,base.group_user,1,1,1,1

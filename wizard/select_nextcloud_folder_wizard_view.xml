@@ -1,25 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="select_nextcloud_folder_wizard_view" model="ir.ui.view">
-        <field name="name">select.nextcloud.folder.wizard.view</field>
+        <field name="name">select.nextcloud.folder.wizard.form</field>
         <field name="model">select.nextcloud.folder.wizard</field>
-        <field name="priority" eval="1"/>
         <field name="arch" type="xml">
-            <file_explore_view>
+            <form string="Select Nextcloud Folder">
                 <sheet>
                     <group>
-                        <group>
-                            <field name="attachment_id" readonly="1" force_save="1"/>
-                            <field name="folder_id" options="{'no_open': True, 'no_create': True,
-                                'no_quick_create': True}"/>
-                            <field name="res_model" invisible="0"/>
-                        </group>
+                        <field name="attachment_id" readonly="1" force_save="1"/>
+                        <field name="folder_id"
+                               options="{'no_open': True, 'no_create': True, 'no_quick_create': True}"/>
+                        <field name="res_model" invisible="1"/>
                     </group>
                 </sheet>
                 <footer>
-                    <button name="button_upload" type="object" string="Confirm" class="oe_highlight"/>
+                    <button name="button_upload" type="object"
+                            string="Confirm" class="oe_highlight"/>
                     <button string="Cancel" special="cancel"/>
                 </footer>
-            </file_explore_view>
+            </form>
         </field>
     </record>
 </odoo>
